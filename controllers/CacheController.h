@@ -1,7 +1,8 @@
 #pragma once
 
 #include <drogon/HttpController.h>
-#include <models/repository.h>
+
+#include <models/cacheservice.h>
 
 using namespace drogon;
 
@@ -20,11 +21,11 @@ class CacheController : public HttpController<CacheController>
   
   public:
     CacheController() {
-      _repo = new repository::DiskRepository("/home/zut3/db.csv");
+      _service = new cache::CacheService();
     }
     ~CacheController() {
-      delete _repo;
+      delete _service;
     }
   private:
-    repository::Repository* _repo; 
+    cache::CacheService* _service;
 };  

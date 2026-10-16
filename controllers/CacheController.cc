@@ -14,7 +14,7 @@ void CacheController::getValue(const HttpRequestPtr& req,
     const std::string key = jsonPtr->get("key", "").asString();
     
     std::string value; Json::Value json;
-    json["value"] = _repo->get(key, value) ? value : Json::Value::null;
+    json["value"] = _service->get(key, value) ? value : Json::Value::null;
 
     auto resp = HttpResponse::newHttpJsonResponse(json);
     callback(resp);
@@ -27,7 +27,7 @@ void CacheController::setValue(const HttpRequestPtr& req,
 
     const std::string key = jsonPtr->get("key", "").asString();
     const std::string value = jsonPtr->get("value", "").asString();
-    _repo->set(key, value);
+    _service->set(key, value);
 
     auto resp = HttpResponse::newHttpResponse();    
     resp->setStatusCode(k200OK);
@@ -40,7 +40,7 @@ void CacheController::deleteKey(const HttpRequestPtr& req,
     auto jsonPtr = req->jsonObject();  
 
     const std::string key = jsonPtr->get("key", "").asString();
-    _repo->deleteKey(key);
+    _service->deleteKey(key);
 
     auto resp = HttpResponse::newHttpResponse();    
     resp->setStatusCode(k200OK);

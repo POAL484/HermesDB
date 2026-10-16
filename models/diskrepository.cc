@@ -1,4 +1,4 @@
-#include "repository.h"
+#include "diskrepository.h"
 
 namespace repository {
     void DiskRepository::deleteKey(const std::string& key) {
