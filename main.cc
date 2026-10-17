@@ -2,6 +2,7 @@
 
 int main() {
     drogon::app()
+        .loadConfigFile("../config.json")
         .addListener("0.0.0.0", 80)
         .run();
     return 0;

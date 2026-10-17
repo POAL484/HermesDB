@@ -21,7 +21,7 @@ class CacheController : public HttpController<CacheController>
   
   public:
     CacheController() {
-      _service = new cache::CacheService();
+      _service = new cache::CacheService("/home/zut3/db.csv");
     }
     ~CacheController() {
       delete _service;

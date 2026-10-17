@@ -13,11 +13,15 @@ void CacheController::getValue(const HttpRequestPtr& req,
 
     const std::string key = jsonPtr->get("key", "").asString();
     
-    std::string value; Json::Value json;
-    json["value"] = _service->get(key, value) ? value : Json::Value::null;
+    auto* loop = drogon::app().getLoop();
 
-    auto resp = HttpResponse::newHttpJsonResponse(json);
-    callback(resp);
+    loop->runInLoop([this, key, callback = std::move(callback)](){
+            std::string value; Json::Value json;
+        json["value"] = _service->get(key, value) ? value : Json::Value::null;
+
+        auto resp = HttpResponse::newHttpJsonResponse(json);
+        callback(resp);
+    });
 }
 
 void CacheController::setValue(const HttpRequestPtr& req, 
@@ -27,23 +31,31 @@ void CacheController::setValue(const HttpRequestPtr& req,
 
     const std::string key = jsonPtr->get("key", "").asString();
     const std::string value = jsonPtr->get("value", "").asString();
-    _service->set(key, value);
+    
+    auto* loop = drogon::app().getLoop();
 
-    auto resp = HttpResponse::newHttpResponse();    
-    resp->setStatusCode(k200OK);
-    callback(resp);
+    loop->runInLoop([this, key, value, callback=std::move(callback)](){
+        _service->set(key, value);
+
+        auto resp = HttpResponse::newHttpResponse();    
+        resp->setStatusCode(k200OK);
+        callback(resp);
+    });
 }
 
 void CacheController::deleteKey(const HttpRequestPtr& req, 
     std::function<void(const HttpResponsePtr&)>&& callback) 
 { 
     auto jsonPtr = req->jsonObject();  
-
     const std::string key = jsonPtr->get("key", "").asString();
-    _service->deleteKey(key);
+    
+    auto* loop = drogon::app().getLoop();
 
-    auto resp = HttpResponse::newHttpResponse();    
-    resp->setStatusCode(k200OK);
-    callback(resp);
+    loop->runInLoop([this, key, callback = std::move(callback)](){
+        _service->deleteKey(key);
+        auto resp = HttpResponse::newHttpResponse();    
+        resp->setStatusCode(k200OK);
+        callback(resp);
+    });
 }
 
