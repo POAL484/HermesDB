@@ -16,7 +16,7 @@ void CacheController::getValue(const HttpRequestPtr& req,
     auto* loop = drogon::app().getLoop();
 
     loop->runInLoop([this, key, callback = std::move(callback)](){
-            std::string value; Json::Value json;
+        std::string value; Json::Value json;
         json["value"] = _service->get(key, value) ? value : Json::Value::null;
 
         auto resp = HttpResponse::newHttpJsonResponse(json);
@@ -59,3 +59,13 @@ void CacheController::deleteKey(const HttpRequestPtr& req,
     });
 }
 
+void CacheController::getUuid(const HttpRequestPtr& req, 
+    std::function<void(const HttpResponsePtr&)>&& callback) 
+{
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setBody(drogon::utils::getUuid());
+    resp->setStatusCode(k200OK);
+    
+    callback(resp);
+}
+  

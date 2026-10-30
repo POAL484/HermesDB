@@ -10,7 +10,7 @@ namespace cache {
 class CacheService {
  public:
     CacheService(const std::string& path="") { 
-        if(path.empty()) _repo = new repository::InMemoryRepository();
+        if(path.empty()) _repo = new repository::LfuRepository();
         else _repo = new repository::DiskRepository(path);
     }
 
