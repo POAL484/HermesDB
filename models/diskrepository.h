@@ -4,12 +4,15 @@
 
 #include<fstream>
 #include<mutex>
+#include <trantor/utils/Logger.h>
 
 namespace repository {
 
 class DiskRepository : public Repository {
  public:
-    DiskRepository(const std::string& path) : _filepath(path) {}
+    DiskRepository(const std::string& path = "/tmp/db.csv") : _filepath(path) {
+        LOG_INFO << "Created disk repo. File is " << path;
+    }
 
     void deleteKey(const std::string& key) override;
 

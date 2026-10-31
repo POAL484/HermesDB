@@ -1,23 +1,26 @@
 #include "CacheController.h"
 
 #include <models/repository.h>
+
 #include <drogon/HttpResponse.h>
 #include <jsoncpp/json/json.h>
 
 using namespace drogon;
 
 void CacheController::getValue(const HttpRequestPtr& req, 
-    std::function<void (const HttpResponsePtr &)> &&callback)
+    std::function<void (const HttpResponsePtr &)> &&callback, std::string&& uuid)
 {
+    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse());
+
     auto jsonPtr = req->jsonObject();  
 
     const std::string key = jsonPtr->get("key", "").asString();
     
     auto* loop = drogon::app().getLoop();
 
-    loop->runInLoop([this, key, callback = std::move(callback)](){
+    loop->runInLoop([this, uuid = std::move(uuid), key, callback = std::move(callback)](){
         std::string value; Json::Value json;
-        json["value"] = _service->get(key, value) ? value : Json::Value::null;
+        json["value"] = _service->get(uuid, key, value) ? value : Json::Value::null;
 
         auto resp = HttpResponse::newHttpJsonResponse(json);
         callback(resp);
@@ -25,8 +28,10 @@ void CacheController::getValue(const HttpRequestPtr& req,
 }
 
 void CacheController::setValue(const HttpRequestPtr& req, 
-    std::function<void(const HttpResponsePtr&)>&& callback) 
+    std::function<void(const HttpResponsePtr&)>&& callback, std::string&& uuid) 
 {
+    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse());
+    
     auto jsonPtr = req->jsonObject();  
 
     const std::string key = jsonPtr->get("key", "").asString();
@@ -34,8 +39,8 @@ void CacheController::setValue(const HttpRequestPtr& req,
     
     auto* loop = drogon::app().getLoop();
 
-    loop->runInLoop([this, key, value, callback=std::move(callback)](){
-        _service->set(key, value);
+    loop->runInLoop([this, uuid = std::move(uuid), key, value, callback=std::move(callback)](){
+        _service->set(uuid, key, value);
 
         auto resp = HttpResponse::newHttpResponse();    
         resp->setStatusCode(k200OK);
@@ -44,28 +49,44 @@ void CacheController::setValue(const HttpRequestPtr& req,
 }
 
 void CacheController::deleteKey(const HttpRequestPtr& req, 
-    std::function<void(const HttpResponsePtr&)>&& callback) 
+    std::function<void(const HttpResponsePtr&)>&& callback, std::string&& uuid) 
 { 
+    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse());
+    
     auto jsonPtr = req->jsonObject();  
     const std::string key = jsonPtr->get("key", "").asString();
-    
+
     auto* loop = drogon::app().getLoop();
 
-    loop->runInLoop([this, key, callback = std::move(callback)](){
-        _service->deleteKey(key);
+    loop->runInLoop([this, uuid = std::move(uuid), key, callback = std::move(callback)](){
+        _service->deleteKey(uuid, key);
         auto resp = HttpResponse::newHttpResponse();    
         resp->setStatusCode(k200OK);
         callback(resp);
     });
 }
 
-void CacheController::getUuid(const HttpRequestPtr& req, 
+void CacheController::registerUser(const HttpRequestPtr& req, 
     std::function<void(const HttpResponsePtr&)>&& callback) 
 {
-    auto resp = HttpResponse::newHttpResponse();
-    resp->setBody(drogon::utils::getUuid());
+    const std::string uuid = _service->registerRepo<repository::LruRepository>();
+
+    Json::Value json;
+    json["uuid"] = uuid;
+
+    auto resp = HttpResponse::newHttpJsonResponse(json);
     resp->setStatusCode(k200OK);
     
     callback(resp);
 }
   
+HttpResponsePtr CacheController::makeUnknownUserResponse() 
+{
+    Json::Value json;
+    json["error"] = "Unknown user uuid";    
+    
+    auto resp = HttpResponse::newHttpJsonResponse(json);
+    resp->setStatusCode(k403Forbidden);
+    
+    return resp;
+}

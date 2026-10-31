@@ -1,14 +1,18 @@
 #pragma once
 
+#include <models/repository.h>
+
 #include <unordered_map>
 #include <list>
-#include <models/repository.h>
+#include <trantor/utils/Logger.h>
 
 namespace repository {
 
 class InMemoryRepository : public Repository {
  public:
-    InMemoryRepository(size_t capacity = 500) : _capacity(capacity) {}
+    InMemoryRepository(size_t capacity = 500) : _capacity(capacity) {
+      LOG_INFO << "Created in-memory repo with cap " << _capacity;
+    }
 
  protected:
     size_t _capacity;
@@ -16,6 +20,8 @@ class InMemoryRepository : public Repository {
 
 class LruRepository : public InMemoryRepository {
  public:
+    using InMemoryRepository::InMemoryRepository;
+   
     void deleteKey(const std::string& key) override;
 
     bool get(const std::string& key, std::string& value) override;
@@ -31,6 +37,8 @@ class LruRepository : public InMemoryRepository {
 
 class LfuRepository : public InMemoryRepository {
  public:
+    using InMemoryRepository::InMemoryRepository;
+
     void deleteKey(const std::string& key) override;
 
     bool get(const std::string& key, std::string& value) override;
