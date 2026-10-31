@@ -3,6 +3,7 @@
 namespace repository {
 
     void LruRepository::deleteKey(const std::string& key) {
+        std::lock_guard guard(_mtx);
         auto it = _hashtable.find(key);
         if(it == _hashtable.end()) return;
 
@@ -11,6 +12,7 @@ namespace repository {
     }
 
     bool LruRepository::get(const std::string& key, std::string& value) {
+        std::lock_guard guard(_mtx);
         auto it = _hashtable.find(key);
         if(it == _hashtable.end()) return false;
         
@@ -21,6 +23,7 @@ namespace repository {
     }
 
     void LruRepository::set(const std::string& key, const std::string& value) {
+        std::lock_guard guard(_mtx);
         auto it = _hashtable.find(key);
         if(it != _hashtable.end()) {
             it->second.first = value;
@@ -38,6 +41,7 @@ namespace repository {
     }
 
     void LruRepository::moveToRecentlyUsed(std::unordered_map<std::string, LruRepository::Value>::iterator it) {
+        std::lock_guard guard(_mtx);
         std::string key = it->first;
         
         _keys.erase(it->second.second);
@@ -48,11 +52,13 @@ namespace repository {
 
 
     void LfuRepository::insert(int freq, std::string key, std::string value) {
+        std::lock_guard guard(_mtx);
         _freqs[freq].push_back({key, value});
         _cache[key] = {freq, --_freqs[freq].end()};
     }
 
     void LfuRepository::updateFreq(const std::string& key) {
+        std::lock_guard guard(_mtx);
         auto it = _cache.find(key);
         if(it == _cache.end()) return;
         int freq = it->second.first;
@@ -69,6 +75,7 @@ namespace repository {
     }
 
     void LfuRepository::deleteKey(const std::string& key) {
+        std::lock_guard guard(_mtx);
         auto it = _cache.find(key);
         if(it == _cache.end()) return;
         int freq = it->second.first;
@@ -82,6 +89,7 @@ namespace repository {
     }
 
     bool LfuRepository::get(const std::string& key, std::string& value) {
+        std::lock_guard guard(_mtx);
         auto it = _cache.find(key);
         if(it == _cache.end()) return false;
         auto kv = *(it->second.second);
@@ -92,10 +100,10 @@ namespace repository {
     }
 
     void LfuRepository::set(const std::string& key, const std::string& value) {
+        std::lock_guard guard(_mtx);
         auto it = _cache.find(key);
         if(it != _cache.end()) {
-            it->second.second->second = value;
-            
+            it->second.second->second = value;            
             return;
         }
 

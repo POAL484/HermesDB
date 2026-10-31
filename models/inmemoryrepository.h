@@ -4,6 +4,7 @@
 
 #include <unordered_map>
 #include <list>
+#include <mutex>
 #include <trantor/utils/Logger.h>
 
 namespace repository {
@@ -16,6 +17,7 @@ class InMemoryRepository : public Repository {
 
  protected:
     size_t _capacity;
+    std::mutex _mtx;
 };
 
 class LruRepository : public InMemoryRepository {
