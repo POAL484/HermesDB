@@ -4,16 +4,21 @@ namespace repository {
 
     void LruRepository::deleteKey(const std::string& key) {
         auto it = _hashtable.find(key);
-        if(it == _hashtable.end()) return;
-
+        if(it == _hashtable.end()) {
+            LOG_ERROR << "Key " << key << "does not exists";
+            return;
+        }
         _keys.erase(it->second.second);
         _hashtable.erase(it);
     }
 
     bool LruRepository::get(const std::string& key, std::string& value) {
         auto it = _hashtable.find(key);
-        if(it == _hashtable.end()) return false;
-        
+        if(it == _hashtable.end()) {
+            LOG_ERROR << "Key " << key << "does not exists";
+            return false;
+        }
+
         value = it->second.first;
         moveToRecentlyUsed(it);
 
@@ -71,7 +76,11 @@ namespace repository {
 
     void LfuRepository::deleteKey(const std::string& key) {
         auto it = _cache.find(key);
-        if(it == _cache.end()) return;
+        if(it == _cache.end()) {
+            LOG_ERROR << "Key " << key << "does not exists";
+            return;
+        }
+
         int freq = it->second.first;
         auto kv_iter = it->second.second;
         
@@ -84,7 +93,11 @@ namespace repository {
 
     bool LfuRepository::get(const std::string& key, std::string& value) {
         auto it = _cache.find(key);
-        if(it == _cache.end()) return false;
+        if(it == _cache.end()) {
+            LOG_ERROR << "Key " << key << "does not exists";
+            return false;
+        } 
+        
         auto kv = *(it->second.second);
         
         value = kv.second;

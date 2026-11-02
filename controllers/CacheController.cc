@@ -70,7 +70,11 @@ void CacheController::registerUser(const HttpRequestPtr& req,
     std::function<void(const HttpResponsePtr&)>&& callback) 
 {
     std::string policy = drogon::app().getCustomConfig().get("cache_policy", "").asString();
-    
+    if(policy == "") {
+        LOG_WARN << "Cache policy not provided. Using LRU now";
+        policy = "LRU";
+    }
+
     std::string uuid;
     if(policy == "LFU") uuid = _service->registerRepo<repository::LfuRepository>();
     else uuid = _service->registerRepo<repository::LruRepository>();
