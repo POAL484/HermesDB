@@ -5,6 +5,7 @@
 #include <models/inmemoryrepository.h>
 
 #include <trantor/utils/Logger.h>
+#include <drogon/HttpAppFramework.h>
 
 namespace cache {
 
@@ -15,6 +16,10 @@ class CacheService {
     std::string registerRepo() {
         auto uuid = drogon::utils::getUuid();
         _repos[uuid] = new Repo();
+        if(drogon::app().getCustomConfig().get("persistent", false).asBool()) {
+            _persistent[uuid] = new repository::DiskRepository(drogon::app().getCustomConfig().get("persistent_path", "/tmp/").asString() + uuid + ".csv");
+        } 
+
         return uuid;
     }
 
@@ -23,6 +28,7 @@ class CacheService {
     }
 
     void deleteKey(const std::string& uuid, const std::string& key) {
+        if(_persistent.count(uuid)) _persistent[uuid]->deleteKey(key);
         _repos[uuid]->deleteKey(key);
     }
 
@@ -31,11 +37,13 @@ class CacheService {
     }
     
     void set(const std::string& uuid, const std::string& key, const std::string& value) {
+        if(_persistent.count(uuid)) _persistent[uuid]->set(key, value);
         _repos[uuid]->set(key, value);
     }
 
  private:
     std::unordered_map<std::string, repository::Repository*> _repos;
+    std::unordered_map<std::string, repository::DiskRepository*> _persistent;
 };
 
 };
