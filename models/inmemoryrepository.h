@@ -17,7 +17,6 @@ class InMemoryRepository : public Repository {
 
  protected:
     size_t _capacity;
-    std::mutex _mtx;
 };
 
 class LruRepository : public InMemoryRepository {
