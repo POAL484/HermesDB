@@ -10,7 +10,7 @@ namespace repository {
 
 class DiskRepository : public Repository {
  public:
-    DiskRepository(const std::string& path = "/tmp/db.csv") : _filepath(path) {
+    DiskRepository(const std::string& path) : _filepath(path) {
         LOG_INFO << "Created disk repo. File is " << path;
     }
 
@@ -18,9 +18,10 @@ class DiskRepository : public Repository {
 
     bool get(const std::string& key, std::string& value) override;
     void set(const std::string& key, const std::string& value) override;
- private:
-    std::mutex _filemtx;
 
+    void loadTo(Repository* const repo);
+    
+ private:
     const std::string _filepath;
     const char _separator = ';';
     

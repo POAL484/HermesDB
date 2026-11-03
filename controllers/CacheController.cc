@@ -69,16 +69,8 @@ void CacheController::deleteKey(const HttpRequestPtr& req,
 void CacheController::registerUser(const HttpRequestPtr& req, 
     std::function<void(const HttpResponsePtr&)>&& callback) 
 {
-    std::string policy = drogon::app().getCustomConfig().get("cache_policy", "").asString();
-    if(policy == "") {
-        LOG_WARN << "Cache policy not provided. Using LRU now";
-        policy = "LRU";
-    }
-
-    std::string uuid;
-    if(policy == "LFU") uuid = _service->registerRepo<repository::LfuRepository>();
-    else uuid = _service->registerRepo<repository::LruRepository>();
-
+    const std::string uuid = _service->registerRepo();
+ 
     Json::Value json;
     json["uuid"] = uuid;
 

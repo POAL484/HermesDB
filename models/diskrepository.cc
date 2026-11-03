@@ -30,16 +30,32 @@ namespace repository {
         save(op);
     }
 
+
+    void DiskRepository::loadTo(Repository* const repo) {
+        std::ifstream ifs(_filepath);
+        Operation op;
+
+        while(load(ifs, op)) {
+            switch (op.type) {
+                case OperationType::SET:
+                    repo->set(op.key, op.value);
+                    break;
+                case OperationType::DELETE:
+                    repo->deleteKey(op.key);
+                    break;
+                default:
+                    break;
+            }
+        } 
+    }
+
     void DiskRepository::save(const Operation& op) {
-        std::lock_guard<std::mutex> lock(_filemtx);
         std::ofstream ofs(_filepath, std::ios_base::app);
         ofs << op.type << _separator << op.key << _separator << op.value << '\n';
         ofs.close();   
     }
     
     bool DiskRepository::load(std::ifstream& ifs, Operation& op) {
-        std::lock_guard<std::mutex> lock(_filemtx);
-
         std::string line;
         if(!std::getline(ifs, line)) return false;
         

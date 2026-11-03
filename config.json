@@ -68,6 +68,6 @@
     "custom_config" : {
         "cache_policy" : "LRU",
         "persistent": true,
-        "persistent_path": "/home/zut3/"
+        "persistent_path": "/home/zut3/.hermes/"
     }
 }
