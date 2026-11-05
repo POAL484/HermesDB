@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(cache_service CXX)
 
+enable_testing()
+
 # Custom file extension configuration
 if(NOT DEFINED DEFAULT_SOURCE_EXTENSION)
     set(DEFAULT_SOURCE_EXTENSION "cc" CACHE STRING "Default source file extension (e.g., cc, cpp, cxx)")
@@ -80,4 +82,22 @@ target_sources(${PROJECT_NAME}
 
 # ##############################################################################
 
-add_subdirectory(test)
+#add_subdirectory(test)
+
+set(TEST_TARGET_NAME hermes_tests)
+
+add_executable(${TEST_TARGET_NAME} "test/test_main.cc")
+target_link_libraries(${TEST_TARGET_NAME} PRIVATE Drogon::Drogon)
+
+target_include_directories(${TEST_TARGET_NAME}
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+                                   ${CMAKE_CURRENT_SOURCE_DIR}/models)
+target_sources(${TEST_TARGET_NAME}
+               PRIVATE
+               ${SRC_DIR}
+               ${CTL_SRC}
+               ${FILTER_SRC}
+               ${PLUGIN_SRC}
+               ${MODEL_SRC})
+
+ParseAndAddDrogonTests(${TEST_TARGET_NAME})

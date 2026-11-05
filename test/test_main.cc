@@ -3,114 +3,65 @@
 #include <drogon/drogon.h>
 #include <jsoncpp/json/json.h>
 
+#include <models/cacheservice.h>
+
 using namespace drogon;
 
 
 DROGON_TEST(GetUserUUID) 
 {
-    auto client = HttpClient::newHttpClient("http://localhost:80");
-    auto req = HttpRequest::newHttpRequest();
-    req->setPath("/new");
-    req->setMethod(Get);
+    cache::CacheService service;
+    const std::string uuid1 = service.registerRepo();
+    const std::string uuid2 = service.registerRepo();
 
-    client->sendRequest(req, [TEST_CTX](ReqResult res, const HttpResponsePtr& resp) {
-        REQUIRE(resp != nullptr);
-
-        CHECK(resp->getStatusCode() == k200OK);
-
-        std::shared_ptr<Json::Value> json = resp->getJsonObject();
-        std::string uuid = json->get("uuid", "").asString();
-
-        CHECK(uuid != "");
-    });
-}
-
-std::string getUuid() {
-    auto client = HttpClient::newHttpClient("http://localhost:80");
-    auto req = HttpRequest::newHttpRequest();
-    req->setPath("/new");
-    req->setMethod(Get);
-
-    auto uuidPromise = std::make_shared<std::promise<std::string>>();
-    auto uuidFuture = uuidPromise->get_future();
-    client->sendRequest(req, [uuidPromise](ReqResult res, const HttpResponsePtr& resp) {
-        if (!resp)
-        {
-            uuidPromise->set_value("");
-            return;
-        }
-        std::shared_ptr<Json::Value> json = resp->getJsonObject();
-        uuidPromise->set_value(json ? json->get("uuid", "").asString() : "");
-    });
-
-    return uuidFuture.get();
+    CHECK(uuid1 != uuid2);
 }
 
 
 DROGON_TEST(CRUD) 
 {
-    std::string uuid = getUuid();
-    REQUIRE(uuid != "");
+    cache::CacheService service;
+    const std::string uuid = service.registerRepo();
 
-    LOG_DEBUG << "Using UUID: " << uuid;
+    std::string value;
+    service.set(uuid, "key", "value");
+    CHECK(service.get(uuid, "key", value));
+    CHECK(value == "value");
 
-    auto client = HttpClient::newHttpClient("http://localhost:80");
-    Json::Value postBody;
-    postBody["key"] = "key";
-    postBody["value"] = "value";
+    service.deleteKey(uuid, "key");
+    CHECK(!service.get(uuid, "key", value));
+}
+
+DROGON_TEST(Lru) 
+{
+    repository::LruRepository repo(1);
     
-    auto postReq = HttpRequest::newHttpJsonRequest(postBody);
-    postReq->setPath("/?uuid=" + uuid);
-    postReq->setMethod(Post);
+    std::string value;
+    repo.set("key1", "value1");
+    CHECK(repo.get("key1", value));
+    CHECK(value == "value1");
 
-    client->sendRequest(postReq, [TEST_CTX](ReqResult res, const HttpResponsePtr& resp) {
-        REQUIRE(resp != nullptr);
+    repo.set("key2", "value2");
+    CHECK(repo.get("key2", value));
+    CHECK(value == "value2");
 
-        CHECK(resp->getStatusCode() == k200OK);
-    });
+    CHECK(!repo.get("key1", value));
+}
 
-    Json::Value getBody;
-    getBody["key"] = "key";
+DROGON_TEST(Lfu) 
+{
+    repository::LfuRepository repo(1);
+    
+    std::string value;
+    repo.set("key1", "value1");
+    CHECK(repo.get("key1", value));
+    CHECK(value == "value1");
 
-    auto getReq = HttpRequest::newHttpJsonRequest(getBody);
-    getReq->setPath("/?uuid=" + uuid);
-    getReq->setMethod(Get);
+    repo.set("key2", "value2");
+    CHECK(repo.get("key2", value));
+    CHECK(value == "value2");
 
-    client->sendRequest(getReq, [TEST_CTX](ReqResult res, const HttpResponsePtr& resp) {
-        REQUIRE(resp != nullptr);
-
-        CHECK(resp->getStatusCode() == k200OK);
-        std::shared_ptr<Json::Value> json = resp->getJsonObject();
-        CHECK(json->get("value", "") == "value");
-    });
-
-    Json::Value deleteBody;
-    deleteBody["key"] = "key";
-
-    auto deleteReq = HttpRequest::newHttpJsonRequest(deleteBody);
-    deleteReq->setPath("/?uuid=" + uuid);
-    deleteReq->setMethod(Delete);
-
-    client->sendRequest(deleteReq, [TEST_CTX](ReqResult res, const HttpResponsePtr& resp) {
-        REQUIRE(resp != nullptr);
-
-        CHECK(resp->getStatusCode() == k200OK);
-    });
-
-    Json::Value checkBody;
-    checkBody["key"] = "key";
-
-    auto checkReq = HttpRequest::newHttpJsonRequest(checkBody);
-    checkReq->setPath("/?uuid=" + uuid);
-    checkReq->setMethod(Get);
-
-    client->sendRequest(checkReq, [TEST_CTX](ReqResult res, const HttpResponsePtr& resp) {
-        REQUIRE(resp != nullptr);
-
-        CHECK(resp->getStatusCode() == k200OK);
-        std::shared_ptr<Json::Value> json = resp->getJsonObject();
-        CHECK(json->get("value", "") == Json::nullValue);
-    });
+    CHECK(!repo.get("key1", value));
 }
 
 int main(int argc, char** argv) 
