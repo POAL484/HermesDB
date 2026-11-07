@@ -2,47 +2,6 @@
 
 namespace repository {
 
-    void LruRepository::deleteKey(const std::string& key) {
-        auto it = _hashtable.find(key);
-        if(it == _hashtable.end()) {
-            LOG_ERROR << "Key " << key << "does not exists";
-            return;
-        }
-        _keys.erase(it->second.second);
-        _hashtable.erase(it);
-    }
-
-    bool LruRepository::get(const std::string& key, std::string& value) {
-        auto it = _hashtable.find(key);
-        if(it == _hashtable.end()) {
-            LOG_ERROR << "Key " << key << "does not exists";
-            return false;
-        }
-
-        value = it->second.first;
-        moveToRecentlyUsed(it);
-
-        return true;
-    }
-
-    void LruRepository::set(const std::string& key, const std::string& value) {
-        auto it = _hashtable.find(key);
-        if(it != _hashtable.end()) {
-            it->second.first = value;
-            moveToRecentlyUsed(it);
-            return;
-        }
-
-        if(_hashtable.size() >= _capacity) {
-            std::string leastRecentlyKey = _keys.back();
-            LOG_INFO << "Exceeding capacity. Deleting key";
-            deleteKey(leastRecentlyKey);
-        }
-        
-        _keys.push_front(key);
-        _hashtable[key] = {value, _keys.begin()};
-    }
-
     void LruRepository::moveToRecentlyUsed(std::unordered_map<std::string, LruRepository::Value>::iterator it) {
         std::string key = it->first;
         
@@ -52,8 +11,42 @@ namespace repository {
         it->second.second = _keys.begin();
     }
 
+    operation::OperationResult LruRepository::deleteKey(const std::string& key) {
+        operation::OperationResult res{"OK!"};
+        
+        auto it = _hashtable.find(key);
+        if(it == _hashtable.end()) return res;
 
-    void LfuRepository::insert(int freq, std::string key, std::string value) {
+        _keys.erase(it->second.second);
+        _hashtable.erase(it);
+
+        return res;
+    } 
+
+    operation::OperationResult LruRepository::apply(const operation::Operation& op) {
+        if(op.type == operation::OperationType::DELETE) {
+            return deleteKey(op.key);
+        }
+        
+        auto it = _hashtable.find(op.key);
+    
+        if(it != _hashtable.end()) {
+            moveToRecentlyUsed(it);
+            return it->second.first.apply(op);
+        }
+
+        if(_hashtable.size() >= _capacity) {
+            std::string leastRecentlyKey = _keys.back();
+            _hashtable.erase(leastRecentlyKey);
+            _keys.pop_back();
+        }
+
+        _keys.push_front(op.key);
+        _hashtable[op.key] = {cache::Cache(), _keys.begin()};
+        return _hashtable[op.key].first.apply(op);
+    }
+
+    void LfuRepository::insert(int freq, std::string key, cache::Cache value) {
         _freqs[freq].push_back({key, value});
         _cache[key] = {freq, --_freqs[freq].end()};
     }
@@ -63,7 +56,7 @@ namespace repository {
         if(it == _cache.end()) return;
         int freq = it->second.first;
         auto kv_iter = it->second.second;
-        std::pair<std::string, std::string> kv = *kv_iter;
+        std::pair<std::string, cache::Cache> kv = *kv_iter;
 
         _freqs[freq].erase(kv_iter);
         if(_freqs[freq].empty()) {
@@ -74,13 +67,11 @@ namespace repository {
         insert(freq + 1, kv.first, kv.second);
     }
 
-    void LfuRepository::deleteKey(const std::string& key) {
+    operation::OperationResult LfuRepository::deleteKey(const std::string& key) {
+        operation::OperationResult res{"OK!"};
+        
         auto it = _cache.find(key);
-        if(it == _cache.end()) {
-            LOG_ERROR << "Key " << key << "does not exists";
-            return;
-        }
-
+        if(it == _cache.end()) return res;
         int freq = it->second.first;
         auto kv_iter = it->second.second;
         
@@ -88,33 +79,21 @@ namespace repository {
         if(_freqs[freq].empty()) {
             _freqs.erase(freq);
             if(_minfreq == freq) _minfreq += 1;
-        }        
+        }  
+        return res;
     }
 
-    bool LfuRepository::get(const std::string& key, std::string& value) {
-        auto it = _cache.find(key);
-        if(it == _cache.end()) {
-            LOG_ERROR << "Key " << key << "does not exists";
-            return false;
-        } 
-        
-        auto kv = *(it->second.second);
-        
-        value = kv.second;
-        updateFreq(kv.first);
-        return true;
-    }
-
-    void LfuRepository::set(const std::string& key, const std::string& value) {
-        auto it = _cache.find(key);
-        if(it != _cache.end()) {
-            it->second.second->second = value;            
-            return;
+    operation::OperationResult LfuRepository::apply(const operation::Operation& op) {
+        if(op.type == operation::OperationType::DELETE) {
+            return deleteKey(op.key);
         }
 
-        if(_capacity == _cache.size()) {
-            LOG_INFO << "Exceeding capacity. Deleting key";
-            
+        auto it = _cache.find(op.key);
+        if(it != _cache.end()) {
+            return it->second.second->second.apply(op);
+        }
+
+        if(_cache.size() >= _capacity) {
             _cache.erase(_freqs[_minfreq].front().first);
             _freqs[_minfreq].pop_front();
 
@@ -123,7 +102,12 @@ namespace repository {
             }
         }
 
+        cache::Cache ch;
+        auto res = ch.apply(op);
+        
         _minfreq = 1;
-        insert(1, key, value);
+        insert(1, op.key, ch);
+        
+        return res;
     }
 }

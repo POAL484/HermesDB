@@ -1,69 +1,31 @@
 #include "CacheController.h"
 
 #include <models/repository.h>
+#include <models/types.h>
+#include <models/operation.h>
 
 #include <drogon/HttpResponse.h>
 #include <jsoncpp/json/json.h>
 
 using namespace drogon;
 
-void CacheController::getValue(const HttpRequestPtr& req, 
-    std::function<void (const HttpResponsePtr &)> &&callback, std::string&& uuid)
-{
-    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse());
-
-    auto jsonPtr = req->jsonObject();  
-
-    const std::string key = jsonPtr->get("key", "").asString();
-    
-    auto* loop = drogon::app().getLoop();
-
-    loop->runInLoop([this, uuid = std::move(uuid), key, callback = std::move(callback)](){
-        std::string value; Json::Value json;
-        json["value"] = _service->get(uuid, key, value) ? value : Json::Value::null;
-
-        auto resp = HttpResponse::newHttpJsonResponse(json);
-        callback(resp);
-    });
-}
-
-void CacheController::setValue(const HttpRequestPtr& req, 
+void CacheController::applyOperation(const HttpRequestPtr& req, 
     std::function<void(const HttpResponsePtr&)>&& callback, std::string&& uuid) 
-{
-    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse());
+{   
+    auto json = req->getJsonObject();
+    operation::OperationType type = (operation::OperationType)json->get("op", Json::Value(0)).asInt();
+    const std::string key = json->get("key", "").asString();
+    const std::string value = json->get("value", "").asString();
+
+    LOG_DEBUG << "Operation type is " << (int)type; 
     
-    auto jsonPtr = req->jsonObject();  
+    operation::OperationResult res = _service->apply(uuid, {type, key, value});
 
-    const std::string key = jsonPtr->get("key", "").asString();
-    const std::string value = jsonPtr->get("value", "").asString();
-    
-    auto* loop = drogon::app().getLoop();
+    auto resp = HttpResponse::newHttpResponse();
+    resp->setStatusCode(k200OK);
+    resp->setBody(res.message);
 
-    loop->runInLoop([this, uuid = std::move(uuid), key, value, callback=std::move(callback)](){
-        _service->set(uuid, key, value);
-
-        auto resp = HttpResponse::newHttpResponse();    
-        resp->setStatusCode(k200OK);
-        callback(resp);
-    });
-}
-
-void CacheController::deleteKey(const HttpRequestPtr& req, 
-    std::function<void(const HttpResponsePtr&)>&& callback, std::string&& uuid) 
-{ 
-    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse());
-    
-    auto jsonPtr = req->jsonObject();  
-    const std::string key = jsonPtr->get("key", "").asString();
-
-    auto* loop = drogon::app().getLoop();
-
-    loop->runInLoop([this, uuid = std::move(uuid), key, callback = std::move(callback)](){
-        _service->deleteKey(uuid, key);
-        auto resp = HttpResponse::newHttpResponse();    
-        resp->setStatusCode(k200OK);
-        callback(resp);
-    });
+    callback(resp);
 }
 
 void CacheController::registerUser(const HttpRequestPtr& req, 

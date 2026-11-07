@@ -1,15 +1,12 @@
 #pragma once
 
-#include<string>
+#include <models/operation.h>
 
 namespace repository {
 
 class Repository {
  public:
-    virtual void deleteKey(const std::string& key) = 0;
-
-    virtual bool get(const std::string& key, std::string& value) = 0;
-    virtual void set(const std::string& key, const std::string& value) = 0;
+   virtual operation::OperationResult apply(const operation::Operation&) = 0;
  protected:
     Repository() = default;
 };

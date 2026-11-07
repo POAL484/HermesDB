@@ -1,5 +1,6 @@
 #pragma once
 
+#include <models/operation.h>
 #include <models/repository.h>
 #include <models/diskrepository.h>
 #include <models/inmemoryrepository.h>
@@ -51,18 +52,9 @@ class CacheService {
         return _repos.count(uuid);
     }
 
-    void deleteKey(const std::string& uuid, const std::string& key) {
-        if(_persistent.count(uuid)) _persistent[uuid]->deleteKey(key);
-        _repos[uuid]->deleteKey(key);
-    }
-
-    bool get(const std::string& uuid, const std::string& key, std::string& value) {
-        return _repos[uuid]->get(key, value);
-    }
-    
-    void set(const std::string& uuid, const std::string& key, const std::string& value) {
-        if(_persistent.count(uuid)) _persistent[uuid]->set(key, value);
-        _repos[uuid]->set(key, value);
+    operation::OperationResult apply(const std::string& uuid, const operation::Operation& op) {
+        if(_isPersistent) _persistent[uuid]->save(op);
+        return _repos[uuid]->apply(op);
     }
 
  private:

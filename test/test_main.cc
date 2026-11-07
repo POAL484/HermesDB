@@ -23,45 +23,76 @@ DROGON_TEST(CRUD)
     cache::CacheService service;
     const std::string uuid = service.registerRepo();
 
-    std::string value;
-    service.set(uuid, "key", "value");
-    CHECK(service.get(uuid, "key", value));
+    service.apply(uuid, {operation::OperationType::SET, "key", "value"});
+    
+    auto value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
     CHECK(value == "value");
 
-    service.deleteKey(uuid, "key");
-    CHECK(!service.get(uuid, "key", value));
+    service.apply(uuid, {operation::OperationType::SET, "key", "value2"});
+    value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    CHECK(value == "value2");
+
+    service.apply(uuid, {operation::OperationType::DELETE, "key"});
+    value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    CHECK(value.empty());
+}
+
+DROGON_TEST(List) 
+{
+    cache::CacheService service;
+    const std::string uuid = service.registerRepo();
+
+    service.apply(uuid, {operation::OperationType::SET, "key", "1"});
+    
+    auto value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    CHECK(value == "1");
+
+    auto len = service.apply(uuid, {operation::OperationType::RPUSH, "key", "2"}).message;    
+    CHECK(len == "2");
+
+    len = service.apply(uuid, {operation::OperationType::LPUSH, "key", "0"}).message;    
+    CHECK(len == "3");
+
+    value = service.apply(uuid, {operation::OperationType::RPOP, "key"}).message;
+    CHECK(value == "2");
+
+    value = service.apply(uuid, {operation::OperationType::LPOP, "key"}).message;
+    CHECK(value == "0");
+
+    value = service.apply(uuid, {operation::OperationType::LPOP, "key"}).message;
+    CHECK(value == "1");    
 }
 
 DROGON_TEST(Lru) 
 {
     repository::LruRepository repo(1);
     
-    std::string value;
-    repo.set("key1", "value1");
-    CHECK(repo.get("key1", value));
+    repo.apply({operation::OperationType::SET, "key1", "value1"});
+    auto value = repo.apply({operation::OperationType::GET, "key1"}).message;
     CHECK(value == "value1");
 
-    repo.set("key2", "value2");
-    CHECK(repo.get("key2", value));
+    repo.apply({operation::OperationType::SET, "key2", "value2"});
+    value = repo.apply({operation::OperationType::GET, "key2"}).message;
     CHECK(value == "value2");
 
-    CHECK(!repo.get("key1", value));
+    value = repo.apply({operation::OperationType::GET, "key1"}).message;
+    CHECK(value.empty());
 }
 
 DROGON_TEST(Lfu) 
 {
     repository::LfuRepository repo(1);
     
-    std::string value;
-    repo.set("key1", "value1");
-    CHECK(repo.get("key1", value));
+    repo.apply({operation::OperationType::SET, "key1", "value1"});
+    auto value = repo.apply({operation::OperationType::GET, "key1"}).message;
     CHECK(value == "value1");
 
-    repo.set("key2", "value2");
-    CHECK(repo.get("key2", value));
+    repo.apply({operation::OperationType::SET, "key2", "value2"});
+    value = repo.apply({operation::OperationType::GET, "key2"}).message;
     CHECK(value == "value2");
 
-    CHECK(!repo.get("key1", value));
+    value = repo.apply({operation::OperationType::GET, "key1"}).message;
+    CHECK(value.empty());
 }
 
 int main(int argc, char** argv) 
