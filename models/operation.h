@@ -11,7 +11,11 @@ enum class OperationType : char {
     LPUSH,
     RPUSH,
     LPOP,
-    RPOP
+    RPOP,
+    SADD,
+    SREM,
+    ISMEMBER,
+    
 };
 
 struct Operation {

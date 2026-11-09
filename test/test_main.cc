@@ -63,6 +63,39 @@ DROGON_TEST(List)
     CHECK(value == "1");    
 }
 
+DROGON_TEST(Set) 
+{
+    cache::CacheService service;
+    const std::string uuid = service.registerRepo();
+
+    service.apply(uuid, {operation::OperationType::SET, "key", "1"});
+    
+    auto value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    CHECK(value == "1");
+
+    auto len = service.apply(uuid, {operation::OperationType::SADD, "key", "2"}).message;
+    CHECK(len == "2");
+
+    len = service.apply(uuid, {operation::OperationType::SADD, "key", "2"}).message;
+    CHECK(len == "2");
+
+    auto is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", "1"}).message;
+    CHECK(is_member == "1");
+
+    is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", "2"}).message;
+    CHECK(is_member == "1");
+    
+    is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", "3"}).message;
+    CHECK(is_member == "0");
+    
+    len = service.apply(uuid, {operation::OperationType::SREM, "key", "1"}).message;
+    CHECK(len == "1");
+
+    is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", "1"}).message;
+    CHECK(is_member == "0");
+
+}
+
 DROGON_TEST(Lru) 
 {
     repository::LruRepository repo(1);

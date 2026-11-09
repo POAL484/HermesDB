@@ -21,6 +21,8 @@ class Cache {
       return applyString(op);    
     case types::Type::LIST:
       return applyList(op);
+    case types::Type::SET:
+      return applySet(op);
     default:
       break;
     }
@@ -31,9 +33,7 @@ class Cache {
   operation::OperationResult applyString(const operation::Operation& op) {
     operation::OperationResult res;
 
-    LOG_DEBUG << "Here";
-
-    types::String* str = reinterpret_cast<types::String*>(_obj);
+    types::String* str = static_cast<types::String*>(_obj);
 
     switch (op.type)
     {
@@ -51,6 +51,9 @@ class Cache {
       _obj = new types::List(str->get()); 
       res = applyList(op);
       break;
+    case operation::OperationType::SADD:
+      _obj = new types::Set(str->get());
+      res = applySet(op);
     default:
       break;
     }
@@ -60,7 +63,7 @@ class Cache {
   operation::OperationResult applyList(const operation::Operation& op) {
     operation::OperationResult res;
 
-    types::List* list = reinterpret_cast<types::List*>(_obj);
+    types::List* list = static_cast<types::List*>(_obj);
 
     switch (op.type)
     {
@@ -75,6 +78,28 @@ class Cache {
       break;
     case operation::OperationType::RPOP:
       res.message = list->rpop();
+      break;
+    default:
+      break;
+    }
+    return res;
+  }
+
+  operation::OperationResult applySet(const operation::Operation& op) {
+    operation::OperationResult res;
+
+    types::Set* set = static_cast<types::Set*>(_obj);
+
+    switch (op.type)
+    {
+    case operation::OperationType::SADD:
+      res.message = std::to_string(set->add(op.value));
+      break;
+    case operation::OperationType::SREM:
+      res.message = std::to_string(set->rem(op.value));
+      break;
+    case operation::OperationType::ISMEMBER:
+      res.message = std::to_string(set->isMember(op.value));
       break;
     default:
       break;

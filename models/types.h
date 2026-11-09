@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_set>
 #include <list>
 #include <string>
 
@@ -7,7 +8,8 @@ namespace types {
 
 enum class Type : char {
     STRING,
-    LIST
+    LIST,
+    SET
 };
 
 class Cacheable {
@@ -66,5 +68,29 @@ class List : public Cacheable {
     std::list<std::string> _list;
 };
 
+class Set : public Cacheable {
+ public:
+    explicit Set(std::string str) {
+        type = Type::SET;
+        _set.insert(str);
+    }
+    
+    size_t add(std::string str) {
+        _set.insert(str);
+        return _set.size();
+    }
+
+    size_t rem(std::string str) {
+        _set.erase(str);
+        return _set.size();
+    }
+
+    bool isMember(std::string str) {
+        return _set.count(str);
+    }
+
+ private:
+    std::unordered_set<std::string> _set;
+};
 
 };
