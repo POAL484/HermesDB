@@ -23,17 +23,17 @@ DROGON_TEST(CRUD)
     cache::CacheService service;
     const std::string uuid = service.registerRepo();
 
-    service.apply(uuid, {operation::OperationType::SET, "key", "value"});
+    service.apply(uuid, {operation::OperationType::SET, "key", {"value"}});
     
-    auto value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    auto value = service.apply(uuid, {operation::OperationType::GET, "key"}).message.asString();
     CHECK(value == "value");
 
-    service.apply(uuid, {operation::OperationType::SET, "key", "value2"});
-    value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    service.apply(uuid, {operation::OperationType::SET, "key", {"value2"}});
+    value = service.apply(uuid, {operation::OperationType::GET, "key"}).message.asString();
     CHECK(value == "value2");
 
     service.apply(uuid, {operation::OperationType::DELETE, "key"});
-    value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    value = service.apply(uuid, {operation::OperationType::GET, "key"}).message.asString();
     CHECK(value.empty());
 }
 
@@ -42,24 +42,24 @@ DROGON_TEST(List)
     cache::CacheService service;
     const std::string uuid = service.registerRepo();
 
-    service.apply(uuid, {operation::OperationType::SET, "key", "1"});
+    service.apply(uuid, {operation::OperationType::SET, "key", {"1"}});
     
-    auto value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    auto value = service.apply(uuid, {operation::OperationType::GET, "key"}).message.asString();
     CHECK(value == "1");
 
-    auto len = service.apply(uuid, {operation::OperationType::RPUSH, "key", "2"}).message;    
-    CHECK(len == "2");
+    auto len = service.apply(uuid, {operation::OperationType::RPUSH, "key", {"2"}}).message["size"].asUInt();    
+    CHECK(len == 2);
 
-    len = service.apply(uuid, {operation::OperationType::LPUSH, "key", "0"}).message;    
-    CHECK(len == "3");
+    len = service.apply(uuid, {operation::OperationType::LPUSH, "key", {"0"}}).message["size"].asUInt();    
+    CHECK(len == 3);
 
-    value = service.apply(uuid, {operation::OperationType::RPOP, "key"}).message;
+    value = service.apply(uuid, {operation::OperationType::RPOP, "key"}).message["value"].asString();
     CHECK(value == "2");
 
-    value = service.apply(uuid, {operation::OperationType::LPOP, "key"}).message;
+    value = service.apply(uuid, {operation::OperationType::LPOP, "key"}).message["value"].asString();
     CHECK(value == "0");
 
-    value = service.apply(uuid, {operation::OperationType::LPOP, "key"}).message;
+    value = service.apply(uuid, {operation::OperationType::LPOP, "key"}).message["value"].asString();
     CHECK(value == "1");    
 }
 
@@ -68,31 +68,50 @@ DROGON_TEST(Set)
     cache::CacheService service;
     const std::string uuid = service.registerRepo();
 
-    service.apply(uuid, {operation::OperationType::SET, "key", "1"});
+    service.apply(uuid, {operation::OperationType::SET, "key", {"1"}});
     
-    auto value = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    auto value = service.apply(uuid, {operation::OperationType::GET, "key"}).message.asString();
     CHECK(value == "1");
 
-    auto len = service.apply(uuid, {operation::OperationType::SADD, "key", "2"}).message;
-    CHECK(len == "2");
+    auto len = service.apply(uuid, {operation::OperationType::SADD, "key", {"2"}}).message["size"].asUInt();
+    CHECK(len == 2);
 
-    len = service.apply(uuid, {operation::OperationType::SADD, "key", "2"}).message;
-    CHECK(len == "2");
+    len = service.apply(uuid, {operation::OperationType::SADD, "key", {"2"}}).message["size"].asUInt();
+    CHECK(len == 2);
 
-    auto is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", "1"}).message;
-    CHECK(is_member == "1");
+    auto is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", {"1"}}).message["is_member"].asBool();
+    CHECK(is_member == true);
 
-    is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", "2"}).message;
-    CHECK(is_member == "1");
+    is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", {"2"}}).message["is_member"].asBool();
+    CHECK(is_member == true);
     
-    is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", "3"}).message;
-    CHECK(is_member == "0");
+    is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", {"3"}}).message["is_member"].asBool();
+    CHECK(is_member == false);
     
-    len = service.apply(uuid, {operation::OperationType::SREM, "key", "1"}).message;
-    CHECK(len == "1");
+    len = service.apply(uuid, {operation::OperationType::SREM, "key", {"1"}}).message["size"].asUInt();
+    CHECK(len == 1);
 
-    is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", "1"}).message;
-    CHECK(is_member == "0");
+    is_member = service.apply(uuid, {operation::OperationType::ISMEMBER, "key", {"1"}}).message["is_member"].asBool();
+    CHECK(is_member == false);
+
+}
+
+DROGON_TEST(Hash) {
+    cache::CacheService service;
+    const std::string uuid = service.registerRepo();
+
+    auto len = service.apply(uuid, {operation::OperationType::HSET, "key", {"key1", "value1", "key2", "value2"}}).message["size"].asUInt();
+    CHECK(len == 2);
+
+    auto hash = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
+    CHECK(hash.get("key1", "").asString() == "value1");
+    CHECK(hash.get("key2", "").asString() == "value2");
+
+    auto once = service.apply(uuid, {operation::OperationType::GETITEM, "key", {"key1"}}).message;
+    CHECK(once.get("key1", "").asString() == "value1");
+
+    auto deleted = service.apply(uuid, {operation::OperationType::HDEL, "key", {"key1"}}).message;
+    CHECK(deleted.get("key1", "").asString() == "value1");
 
 }
 
@@ -100,15 +119,15 @@ DROGON_TEST(Lru)
 {
     repository::LruRepository repo(1);
     
-    repo.apply({operation::OperationType::SET, "key1", "value1"});
-    auto value = repo.apply({operation::OperationType::GET, "key1"}).message;
+    repo.apply({operation::OperationType::SET, "key1", {"value1"}});
+    auto value = repo.apply({operation::OperationType::GET, "key1"}).message.asString();
     CHECK(value == "value1");
 
-    repo.apply({operation::OperationType::SET, "key2", "value2"});
-    value = repo.apply({operation::OperationType::GET, "key2"}).message;
+    repo.apply({operation::OperationType::SET, "key2", {"value2"}});
+    value = repo.apply({operation::OperationType::GET, "key2"}).message.asString();
     CHECK(value == "value2");
 
-    value = repo.apply({operation::OperationType::GET, "key1"}).message;
+    value = repo.apply({operation::OperationType::GET, "key1"}).message.asString();
     CHECK(value.empty());
 }
 
@@ -116,15 +135,15 @@ DROGON_TEST(Lfu)
 {
     repository::LfuRepository repo(1);
     
-    repo.apply({operation::OperationType::SET, "key1", "value1"});
-    auto value = repo.apply({operation::OperationType::GET, "key1"}).message;
+    repo.apply({operation::OperationType::SET, "key1", {"value1"}});
+    auto value = repo.apply({operation::OperationType::GET, "key1"}).message.asString();
     CHECK(value == "value1");
 
-    repo.apply({operation::OperationType::SET, "key2", "value2"});
-    value = repo.apply({operation::OperationType::GET, "key2"}).message;
+    repo.apply({operation::OperationType::SET, "key2", {"value2"}});
+    value = repo.apply({operation::OperationType::GET, "key2"}).message.asString();
     CHECK(value == "value2");
 
-    value = repo.apply({operation::OperationType::GET, "key1"}).message;
+    value = repo.apply({operation::OperationType::GET, "key1"}).message.asString();
     CHECK(value.empty());
 }
 

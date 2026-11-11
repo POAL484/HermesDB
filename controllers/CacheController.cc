@@ -12,19 +12,28 @@ using namespace drogon;
 void CacheController::applyOperation(const HttpRequestPtr& req, 
     std::function<void(const HttpResponsePtr&)>&& callback, std::string&& uuid) 
 {   
-    auto json = req->getJsonObject();
-    operation::OperationType type = (operation::OperationType)json->get("op", Json::Value(0)).asInt();
-    const std::string key = json->get("key", "").asString();
-    const std::string value = json->get("value", "").asString();
-
-    LOG_DEBUG << "Operation type is " << (int)type; 
+    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse());
     
+    auto json = req->getJsonObject();
+    operation::OperationType type = _mapper[json->get("op", "").asString()];
+    const std::string key = json->operator[]("key").asString();
+    const Json::Value& jvalues = json->operator[]("value");
+
+    std::vector<std::string> value;
+    value.reserve(jvalues.size());
+    for(int i = 0; i < jvalues.size(); ++i) {
+        value.push_back(jvalues[i].asString());
+    }
+
     operation::OperationResult res = _service->apply(uuid, {type, key, value});
 
-    auto resp = HttpResponse::newHttpResponse();
-    resp->setStatusCode(k200OK);
-    resp->setBody(res.message);
+    Json::Value json_response;
+    json_response["status"] = 200;
+    json_response["data"] = res.message;
 
+    auto resp = HttpResponse::newHttpJsonResponse(json_response);
+    resp->setStatusCode(k200OK);
+    
     callback(resp);
 }
 

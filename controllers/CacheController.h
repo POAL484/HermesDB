@@ -29,6 +29,21 @@ class CacheController : public HttpController<CacheController>
 
   private:
     cache::CacheService* _service;
+    std::unordered_map<std::string, operation::OperationType> _mapper = {
+      {"GET", operation::OperationType::GET},
+      {"SET", operation::OperationType::SET},
+      {"DELETE", operation::OperationType::DELETE},
+      {"LPUSH", operation::OperationType::LPUSH},
+      {"RPUSH", operation::OperationType::RPUSH},
+      {"LPOP", operation::OperationType::LPOP},
+      {"RPOP", operation::OperationType::RPOP},
+      {"SADD", operation::OperationType::SADD},
+      {"SREM", operation::OperationType::SREM},
+      {"ISMEMBER", operation::OperationType::ISMEMBER},
+      {"GETITEM", operation::OperationType::GETITEM},
+      {"HSET", operation::OperationType::HSET},
+      {"HDEL", operation::OperationType::HDEL},
+    };
     
     HttpResponsePtr makeUnknownUserResponse();
 };  

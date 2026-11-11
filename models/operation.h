@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <jsoncpp/json/value.h>
 
 namespace operation {
 
@@ -15,17 +16,19 @@ enum class OperationType : char {
     SADD,
     SREM,
     ISMEMBER,
-    
+    GETITEM,
+    HSET,
+    HDEL
 };
 
 struct Operation {
     OperationType type; 
     std::string key;
-    std::string value;
+    std::vector<std::string> value;
 };
 
 struct OperationResult {
-    std::string message;
+    Json::Value message;
 };
     
 };

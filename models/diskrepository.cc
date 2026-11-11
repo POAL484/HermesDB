@@ -1,4 +1,7 @@
 #include "diskrepository.h"
+#include <string_view>
+#include <ranges>
+
 
 namespace repository {
     void DiskRepository::loadTo(Repository* const repo) {
@@ -12,7 +15,9 @@ namespace repository {
 
     void DiskRepository::save(const operation::Operation& op) {
         std::ofstream ofs(_filepath, std::ios_base::app);
-        ofs << (int)op.type << _separator << op.key << _separator << op.value << '\n';
+        ofs << (int)op.type << _separator << op.key;
+        for(auto value : op.value) ofs << _separator << value;
+        ofs << '\n';
         ofs.close();   
     }
     
@@ -20,12 +25,14 @@ namespace repository {
         std::string line;
         if(!std::getline(ifs, line)) return false;
         
-        auto sep1 = line.find(_separator);
-        auto sep2 = line.find(_separator, sep1 + 1); 
+        auto sp = std::views::split(line, _separator) | std::ranges::to<std::vector<std::string>>();
+        op.type = (operation::OperationType)(std::stoi(sp[0]));
+        op.key = sp[1];
 
-        op.type = (operation::OperationType)(std::stoi(line.substr(0, sep1)));
-        op.key = line.substr(sep1+1, sep2 - sep1 - 1);
-        op.value = line.substr(sep2+1, line.size() - sep2);
+        if(sp.size() > 2) {
+            sp.erase(sp.begin()); sp.erase(sp.begin());
+            op.value = sp;
+        }
 
         return true;
     }  
