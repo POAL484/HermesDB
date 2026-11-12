@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(cache_service CXX)
 
 enable_testing()
@@ -41,6 +41,10 @@ add_executable(${PROJECT_NAME} main.${DEFAULT_SOURCE_EXTENSION})
 find_package(Drogon CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon)
 
+find_package(Snappy CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Snappy::snappy)
+
+
 # ##############################################################################
 
 aux_source_directory(controllers CTL_SRC)
@@ -80,6 +84,7 @@ set(TEST_TARGET_NAME hermes_tests)
 
 add_executable(${TEST_TARGET_NAME} "test/test_main.cc")
 target_link_libraries(${TEST_TARGET_NAME} PRIVATE Drogon::Drogon)
+target_link_libraries(${TEST_TARGET_NAME} PRIVATE Snappy::snappy)
 
 target_include_directories(${TEST_TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}

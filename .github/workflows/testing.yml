@@ -44,6 +44,19 @@ jobs:
         sudo make install
         cd ../..
         rm -rf drogon
+        
+    - name: Clone and Install Snappy
+      run: |
+        git clone https://github.com/google/snappy.git
+        cd snappy
+        git submodule update --init
+        mkdir build
+        cd build
+        cmake .. -DBUILD_TESTING=OFF
+        make -j$(nproc)
+        sudo make install
+        cd ../..
+        rm -rf snappy
 
     - name: Configure CMake
       run: |

@@ -1,7 +1,7 @@
 #include "diskrepository.h"
 #include <string_view>
 #include <ranges>
-
+#include <snappy.h>
 
 namespace repository {
     void DiskRepository::loadTo(Repository* const repo) {
@@ -14,10 +14,15 @@ namespace repository {
     }
 
     void DiskRepository::save(const operation::Operation& op) {
+        std::stringstream oss;
+        oss << (int)op.type << _separator << op.key;
+        for(auto value : op.value) oss << _separator << value;
+        std::string str = oss.str();
+        std::string compressed;
+        snappy::Compress(str.data(), str.size(), &compressed);
+
         std::ofstream ofs(_filepath, std::ios_base::app);
-        ofs << (int)op.type << _separator << op.key;
-        for(auto value : op.value) ofs << _separator << value;
-        ofs << '\n';
+        ofs << compressed << '\n';
         ofs.close();   
     }
     
@@ -25,7 +30,10 @@ namespace repository {
         std::string line;
         if(!std::getline(ifs, line)) return false;
         
-        auto sp = std::views::split(line, _separator) | std::ranges::to<std::vector<std::string>>();
+        std::string uncompresed;
+        snappy::Uncompress(line.data(), line.size(), &uncompresed);
+        
+        auto sp = std::views::split(uncompresed, _separator) | std::ranges::to<std::vector<std::string>>();
         op.type = (operation::OperationType)(std::stoi(sp[0]));
         op.key = sp[1];
 
