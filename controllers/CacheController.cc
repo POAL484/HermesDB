@@ -12,20 +12,33 @@ using namespace drogon;
 void CacheController::applyOperation(const HttpRequestPtr& req, 
     std::function<void(const HttpResponsePtr&)>&& callback, std::string&& uuid) 
 {   
-    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse());
+    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse(""));
     
     auto json = req->getJsonObject();
     operation::OperationType type = _mapper[json->get("op", "").asString()];
     const std::string key = json->operator[]("key").asString();
-    const Json::Value& jvalues = json->operator[]("value");
+    const Json::Value& jvalue = json->operator[]("value");
+
+    Json::Value array;
+
+    if(!jvalue.isObject() && !jvalue.isArray()) {
+        return callback(makeBadRequestResponse("Value must be json object or array."));
+    }
+
+    if(jvalue.isObject()) {
+        for(auto key : jvalue.getMemberNames()) {
+            array.append(key);
+            array.append(jvalue[key]);
+        }
+    }
 
     std::vector<std::pair<std::string, types::Type>> value;
-    value.reserve(jvalues.size());
-    for(int i = 0; i < jvalues.size(); ++i) {
-        auto str = jvalues[i].asString();
+    value.reserve(array.size());
+    for(int i = 0; i < array.size(); ++i) {
+        auto str = array[i].asString();
 
         types::Type type = types::Type::STRING;
-        if(jvalues[i].isNumeric()) type = types::Type::INT; 
+        if(array[i].isNumeric()) type = types::Type::INT; 
 
         value.push_back({str, type});
     }
@@ -56,7 +69,7 @@ void CacheController::registerUser(const HttpRequestPtr& req,
     callback(resp);
 }
   
-HttpResponsePtr CacheController::makeUnknownUserResponse() 
+HttpResponsePtr CacheController::makeUnknownUserResponse(const std::string& msg="") 
 {
     Json::Value json;
     json["error"] = "Unknown user uuid";    
@@ -66,3 +79,15 @@ HttpResponsePtr CacheController::makeUnknownUserResponse()
     
     return resp;
 }
+
+HttpResponsePtr CacheController::makeBadRequestResponse(const std::string& msg="") 
+{
+    Json::Value json;
+    json["error"] = "Bad request. " + msg;    
+    
+    auto resp = HttpResponse::newHttpJsonResponse(json);
+    resp->setStatusCode(k400BadRequest);
+    
+    return resp;
+}
+

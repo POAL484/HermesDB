@@ -47,5 +47,6 @@ class CacheController : public HttpController<CacheController>
       {"DEC", operation::OperationType::DEC},
     };
     
-    HttpResponsePtr makeUnknownUserResponse();
+    HttpResponsePtr makeUnknownUserResponse(const std::string&);
+    HttpResponsePtr makeBadRequestResponse(const std::string&);
 };  
