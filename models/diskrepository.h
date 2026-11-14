@@ -8,9 +8,16 @@
 
 namespace repository {
 
+enum class CompressionMethod {
+    Snappy,
+    Gzip,
+    Lz4
+};
+
 class DiskRepository {
  public:
-    DiskRepository(const std::string& path) : _filepath(path) {
+    DiskRepository(const std::string& path, CompressionMethod compressionMethod)
+        : _filepath(path), _compressionMethod(compressionMethod) {
         LOG_INFO << "Created disk repo. File is " << path;
     }
 
@@ -19,6 +26,7 @@ class DiskRepository {
 
  private:
     const std::string _filepath;
+    const CompressionMethod _compressionMethod;
     const char _separator = ';';
     
     bool load(std::ifstream& ifs, operation::Operation& op);

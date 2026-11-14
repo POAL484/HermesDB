@@ -7,6 +7,7 @@
 
 #include <trantor/utils/Logger.h>
 #include <drogon/HttpAppFramework.h>
+#include <stdexcept>
 
 namespace cache {
 
@@ -18,6 +19,13 @@ class CacheService {
             LOG_WARN << "Cache policy not provided. Using LRU now";
             _policy = "LRU";
         }
+
+        const std::string compressionMethod =
+            drogon::app().getCustomConfig().get("compression_method", "Snappy").asString();
+        if(compressionMethod == "Snappy") _compressionMethod = repository::CompressionMethod::Snappy;
+        else if(compressionMethod == "GZIP") _compressionMethod = repository::CompressionMethod::Gzip;
+        else if(compressionMethod == "LZ4") _compressionMethod = repository::CompressionMethod::Lz4;
+        else throw std::invalid_argument("Unsupported compression_method: " + compressionMethod);
 
         _persistentDir = drogon::app().getCustomConfig().get("persistent_path", "/tmp/.hermes/").asString();
         _isPersistent = drogon::app().getCustomConfig().get("persistent", false).asBool();
@@ -44,7 +52,7 @@ class CacheService {
         else _repos[uuid] = new repository::LruRepository(); 
 
         if(_isPersistent) {
-            _persistent[uuid] = new repository::DiskRepository(_persistentDir + uuid);
+            _persistent[uuid] = new repository::DiskRepository(_persistentDir + uuid, _compressionMethod);
         }    
     }
 
@@ -64,6 +72,7 @@ class CacheService {
     bool _isPersistent;
     std::string _persistentDir;
     std::string _policy;
+    repository::CompressionMethod _compressionMethod = repository::CompressionMethod::Snappy;
 };
 
 };

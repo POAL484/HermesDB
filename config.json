@@ -67,6 +67,7 @@
     ],
     "custom_config" : {
         "cache_policy" : "LRU",
+        "compression_method": "Snappy",
         "persistent": true,
         "persistent_path": "/home/zut3/.hermes/"
     }

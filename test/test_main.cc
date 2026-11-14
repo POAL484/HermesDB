@@ -4,6 +4,10 @@
 #include <jsoncpp/json/json.h>
 
 #include <models/cacheservice.h>
+#include <array>
+#include <filesystem>
+#include <fstream>
+#include <snappy.h>
 
 using namespace drogon;
 
@@ -170,6 +174,46 @@ DROGON_TEST(Lfu)
 
     value = repo.apply({operation::OperationType::GET, "key1"}).message.asString();
     CHECK(value.empty());
+}
+
+DROGON_TEST(PersistenceCompression) {
+    const std::array methods = {
+        repository::CompressionMethod::Snappy,
+        repository::CompressionMethod::Gzip,
+        repository::CompressionMethod::Lz4
+    };
+
+    for(const auto method : methods) {
+        const auto path = std::filesystem::temp_directory_path() /
+                          ("hermes-compression-" + drogon::utils::getUuid());
+        const std::string value = "persistent value\nwith a newline";
+        repository::DiskRepository disk(path.string(), method);
+        disk.save({operation::OperationType::SET, "key", {{value, types::Type::STRING}}});
+
+        repository::LruRepository restored;
+        disk.loadTo(&restored);
+        CHECK(restored.apply({operation::OperationType::GET, "key"}).message.asString() == value);
+        std::filesystem::remove(path);
+    }
+}
+
+DROGON_TEST(PersistenceLegacySnappy) {
+    const auto path = std::filesystem::temp_directory_path() /
+                      ("hermes-legacy-snappy-" + drogon::utils::getUuid());
+    const std::string serialized = "1;key;legacy value;0";
+    std::string compressed;
+    snappy::Compress(serialized.data(), serialized.size(), &compressed);
+    {
+        std::ofstream file(path, std::ios::binary);
+        file.write(compressed.data(), compressed.size());
+        file.put('\n');
+    }
+
+    repository::DiskRepository disk(path.string(), repository::CompressionMethod::Lz4);
+    repository::LruRepository restored;
+    disk.loadTo(&restored);
+    CHECK(restored.apply({operation::OperationType::GET, "key"}).message.asString() == "legacy value");
+    std::filesystem::remove(path);
 }
 
 int main(int argc, char** argv) 

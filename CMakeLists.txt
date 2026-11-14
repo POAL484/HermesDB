@@ -44,6 +44,15 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon)
 find_package(Snappy CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Snappy::snappy)
 
+find_package(ZLIB REQUIRED)
+find_path(LZ4_INCLUDE_DIR lz4frame.h)
+find_library(LZ4_LIBRARY NAMES lz4)
+if(NOT LZ4_INCLUDE_DIR OR NOT LZ4_LIBRARY)
+    message(FATAL_ERROR "LZ4 development files were not found")
+endif()
+target_include_directories(${PROJECT_NAME} PRIVATE ${LZ4_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB ${LZ4_LIBRARY})
+
 
 # ##############################################################################
 
@@ -85,6 +94,8 @@ set(TEST_TARGET_NAME hermes_tests)
 add_executable(${TEST_TARGET_NAME} "test/test_main.cc")
 target_link_libraries(${TEST_TARGET_NAME} PRIVATE Drogon::Drogon)
 target_link_libraries(${TEST_TARGET_NAME} PRIVATE Snappy::snappy)
+target_include_directories(${TEST_TARGET_NAME} PRIVATE ${LZ4_INCLUDE_DIR})
+target_link_libraries(${TEST_TARGET_NAME} PRIVATE ZLIB::ZLIB ${LZ4_LIBRARY})
 
 target_include_directories(${TEST_TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
