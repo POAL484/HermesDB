@@ -11,6 +11,7 @@ namespace types {
 
 enum class Type : char {
     STRING,
+    INT,
     LIST,
     SET,
     HASH
@@ -21,6 +22,34 @@ class Cacheable {
     Type type;
 
     virtual Json::Value to_json() = 0;
+};
+
+class Int : public Cacheable {
+ public:
+    explicit Int(int64_t n) : _n(n) {
+        type = Type::INT;    
+    }
+
+    void set(int64_t n) {
+        _n = n;
+    }
+
+    Json::Value to_json() override {
+        return Json::Value(_n);
+    }
+
+    int64_t inc(int64_t by) {
+        _n += by;
+        return _n;
+    }
+
+    int64_t dec(int64_t by) {
+        _n -= by;
+        return _n;
+    }
+
+ private:
+    int64_t _n;
 };
 
 class String : public Cacheable {
@@ -47,8 +76,11 @@ class String : public Cacheable {
 
 class List : public Cacheable {
  public:
-    explicit List(std::string str) {
+    List() {
         type = Type::LIST;
+    }
+
+    explicit List(std::string str) : List() {
         _list.push_back(str);
     }
 
@@ -87,8 +119,11 @@ class List : public Cacheable {
 
 class Set : public Cacheable {
  public:
-    explicit Set(std::string str) {
+    Set() {
         type = Type::SET;
+    }
+
+    explicit Set(std::string str) : Set() {
         _set.insert(str);
     }
     
@@ -119,7 +154,7 @@ class Set : public Cacheable {
 
 class Hash : public Cacheable {
  public:
-    explicit Hash() {
+    Hash() {
         type = Type::HASH;
     }
 

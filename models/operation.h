@@ -2,6 +2,7 @@
 
 #include <string>
 #include <jsoncpp/json/value.h>
+#include <models/types.h>
 
 namespace operation {
 
@@ -18,13 +19,15 @@ enum class OperationType : char {
     ISMEMBER,
     GETITEM,
     HSET,
-    HDEL
+    HDEL,
+    INC,
+    DEC
 };
 
 struct Operation {
     OperationType type; 
     std::string key;
-    std::vector<std::string> value;
+    std::vector<std::pair<std::string, types::Type>> value;
 };
 
 struct OperationResult {

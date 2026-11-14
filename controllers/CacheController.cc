@@ -19,10 +19,15 @@ void CacheController::applyOperation(const HttpRequestPtr& req,
     const std::string key = json->operator[]("key").asString();
     const Json::Value& jvalues = json->operator[]("value");
 
-    std::vector<std::string> value;
+    std::vector<std::pair<std::string, types::Type>> value;
     value.reserve(jvalues.size());
     for(int i = 0; i < jvalues.size(); ++i) {
-        value.push_back(jvalues[i].asString());
+        auto str = jvalues[i].asString();
+
+        types::Type type = types::Type::STRING;
+        if(jvalues[i].isNumeric()) type = types::Type::INT; 
+
+        value.push_back({str, type});
     }
 
     operation::OperationResult res = _service->apply(uuid, {type, key, value});

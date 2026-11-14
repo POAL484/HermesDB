@@ -43,6 +43,8 @@ class CacheController : public HttpController<CacheController>
       {"GETITEM", operation::OperationType::GETITEM},
       {"HSET", operation::OperationType::HSET},
       {"HDEL", operation::OperationType::HDEL},
+      {"INC", operation::OperationType::INC},
+      {"DEC", operation::OperationType::DEC},
     };
     
     HttpResponsePtr makeUnknownUserResponse();

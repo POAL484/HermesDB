@@ -16,7 +16,7 @@ namespace repository {
     void DiskRepository::save(const operation::Operation& op) {
         std::stringstream oss;
         oss << (int)op.type << _separator << op.key;
-        for(auto value : op.value) oss << _separator << value;
+        for(auto value : op.value) oss << _separator << value.first << _separator << (int)value.second;
         std::string str = oss.str();
         std::string compressed;
         snappy::Compress(str.data(), str.size(), &compressed);
@@ -37,9 +37,8 @@ namespace repository {
         op.type = (operation::OperationType)(std::stoi(sp[0]));
         op.key = sp[1];
 
-        if(sp.size() > 2) {
-            sp.erase(sp.begin()); sp.erase(sp.begin());
-            op.value = sp;
+        for(int i = 2; i+1 < sp.size(); i += 2) {
+            op.value.push_back({sp[i], (types::Type)(std::stoi(sp[i+1]))});
         }
 
         return true;

@@ -10,15 +10,36 @@ namespace cache {
 
 class Cache {
  public:
-  Cache() {
-    _obj = new types::String("");
+  Cache(types::Type type = types::Type::STRING) {
+    switch (type)
+    {
+    case types::Type::STRING:
+      _obj = new types::String("");
+      break;
+    case types::Type::INT:
+      _obj = new types::Int(0);
+      break;
+    case types::Type::LIST:
+      _obj = new types::List();
+      break;
+    case types::Type::SET:
+      _obj = new types::Set();
+      break;
+    case types::Type::HASH:
+      _obj = new types::Hash();
+      break;
+    default:
+      break;
+    }
   }
 
   operation::OperationResult apply(const operation::Operation& op) {
     switch (_obj->type)
     {
     case types::Type::STRING:
-      return applyString(op);    
+      return applyString(op);
+    case types::Type::INT:
+      return applyInt(op);    
     case types::Type::LIST:
       return applyList(op);
     case types::Type::SET:
@@ -43,7 +64,11 @@ class Cache {
       res.message = str->to_json();
       break;
     case operation::OperationType::SET:
-      str->set(op.value.back());
+      if(op.value.back().second == types::Type::INT) {
+        _obj = new types::Int(stoll(op.value.back().first));
+        break;
+      }
+      str->set(op.value.back().first);
       break;
     case operation::OperationType::LPUSH:
     case operation::OperationType::RPUSH:
@@ -66,6 +91,32 @@ class Cache {
     return res;
   }
 
+  operation::OperationResult applyInt(const operation::Operation& op) {
+    operation::OperationResult res;
+
+    types::Int* num = static_cast<types::Int*>(_obj);
+  
+    switch (op.type)
+    {
+    case operation::OperationType::GET:
+      res.message = num->to_json();
+      break;
+    case operation::OperationType::SET:
+      num->set(stoll(op.value.back().first));
+      break;
+    case operation::OperationType::INC:
+      for(auto value: op.value) res.message = num->inc(stoll(value.first));
+      break;
+    case operation::OperationType::DEC:
+      for(auto value: op.value) res.message = num->dec(stoll(value.first));
+      break;
+    default:
+      break;
+    }
+
+    return res;
+  }
+
   operation::OperationResult applyList(const operation::Operation& op) {
     operation::OperationResult res;
 
@@ -77,10 +128,10 @@ class Cache {
       res.message = list->to_json();
       break;
     case operation::OperationType::LPUSH:
-      for(auto value : op.value) res.message["size"] = list->lpush(value);
+      for(auto value : op.value) res.message["size"] = list->lpush(value.first);
       break;
     case operation::OperationType::RPUSH:
-      for(auto value : op.value) res.message["size"] = list->rpush(value);
+      for(auto value : op.value) res.message["size"] = list->rpush(value.first);
       break;
     case operation::OperationType::LPOP:
       res.message["value"] = list->lpop();
@@ -105,13 +156,13 @@ class Cache {
       res.message = set->to_json();
       break;
     case operation::OperationType::SADD:
-      for(auto value : op.value) res.message["size"] = set->add(value);
+      for(auto value : op.value) res.message["size"] = set->add(value.first);
       break;
     case operation::OperationType::SREM:
-      for(auto value : op.value) res.message["size"] = set->rem(value);
+      for(auto value : op.value) res.message["size"] = set->rem(value.first);
       break;
     case operation::OperationType::ISMEMBER:
-      res.message["is_member"] = set->isMember(op.value.front());
+      res.message["is_member"] = set->isMember(op.value.front().first);
       break;
     default:
       break;
@@ -123,6 +174,7 @@ class Cache {
     operation::OperationResult res;
 
     types::Hash* hash = static_cast<types::Hash*>(_obj);
+    std::vector<std::string> v;
 
     switch (op.type)
     {
@@ -130,13 +182,14 @@ class Cache {
       res.message = hash->to_json();
       break;
     case operation::OperationType::GETITEM:
-      for(auto key: op.value) res.message[key] = hash->get(key);
+      for(auto key: op.value) res.message[key.first] = hash->get(key.first);
       break;
     case operation::OperationType::HSET:
-      res.message["size"] = hash->set(op.value);
+      for(auto e: op.value) v.push_back(e.first);
+      res.message["size"] = hash->set(v);
       break;
     case operation::OperationType::HDEL:
-      for(auto key: op.value) res.message[key] = hash->del(key);
+      for(auto key: op.value) res.message[key.first] = hash->del(key.first);
       break;  
     default:
       break;
