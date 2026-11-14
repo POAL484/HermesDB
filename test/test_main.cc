@@ -124,16 +124,16 @@ DROGON_TEST(Hash) {
     const std::string uuid = service.registerRepo();
 
     auto len = service.apply(uuid, {operation::OperationType::HSET, "key", 
-        {{"key1", types::Type::STRING}, {"value1", types::Type::STRING}, {"key2", types::Type::STRING}, {"value2", types::Type::STRING}}})
+        {{"key1", types::Type::STRING}, {"value1", types::Type::STRING}, {"key2", types::Type::STRING}, {"2", types::Type::INT}}})
         .message["size"].asUInt();
     CHECK(len == 2);
 
     auto hash = service.apply(uuid, {operation::OperationType::GET, "key"}).message;
     CHECK(hash.get("key1", "").asString() == "value1");
-    CHECK(hash.get("key2", "").asString() == "value2");
+    CHECK(hash.get("key2", "").asInt64() == 2);
 
-    auto once = service.apply(uuid, {operation::OperationType::GETITEM, "key", {{"key1", types::Type::STRING}}}).message;
-    CHECK(once.get("key1", "").asString() == "value1");
+    auto once = service.apply(uuid, {operation::OperationType::GETITEM, "key", {{"key2", types::Type::STRING}}}).message;
+    CHECK(once.get("key2", "").asInt64() == 2);
 
     auto deleted = service.apply(uuid, {operation::OperationType::HDEL, "key", {{"key1", types::Type::STRING}}}).message;
     CHECK(deleted.get("key1", "").asString() == "value1");

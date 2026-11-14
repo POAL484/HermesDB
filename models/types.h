@@ -160,25 +160,27 @@ class Hash : public Cacheable {
 
     Json::Value to_json() override {
         Json::Value json;
-        for(auto [k, v] : _hash) json[k] = v;
-        
+        for(auto [k, v] : _hash) {
+            json[k] = getJson(v);
+        }
+
         return json;
     }
 
-    size_t set(const std::vector<std::string>& key_value) {
+    size_t set(const std::vector<std::pair<std::string, Type>>& key_value) {
         _hash.clear();
         for(int i = 0; i+1 < key_value.size(); i += 2) {
-            _hash[key_value[i]] = key_value[i+1];
+            _hash[key_value[i].first] = key_value[i+1];
         }
         return size();
     }
 
-    std::string get(const std::string& key) {
-        return _hash[key];
+    Json::Value get(const std::string& key) {
+        return getJson(_hash[key]);
     }
 
-    std::string del(const std::string& key) {
-        std::string value = _hash[key];
+    Json::Value del(const std::string& key) {
+        auto value = get(key);
         _hash.erase(key);
         return value;
     }
@@ -188,7 +190,12 @@ class Hash : public Cacheable {
     }
 
  private:
-    std::unordered_map<std::string, std::string> _hash;
+    std::unordered_map<std::string, std::pair<std::string, Type>> _hash;
+
+    Json::Value getJson(std::pair<std::string, Type> value) {
+        if(value.second == Type::INT) return Json::Value(Json::Value::Int64(stoll(value.first)));
+        return Json::Value(value.first);
+    }
 };
 
 };

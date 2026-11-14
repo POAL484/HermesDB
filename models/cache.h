@@ -174,7 +174,7 @@ class Cache {
     operation::OperationResult res;
 
     types::Hash* hash = static_cast<types::Hash*>(_obj);
-    std::vector<std::string> v;
+    std::vector<std::pair<std::string, types::Type>> v;
 
     switch (op.type)
     {
@@ -185,7 +185,7 @@ class Cache {
       for(auto key: op.value) res.message[key.first] = hash->get(key.first);
       break;
     case operation::OperationType::HSET:
-      for(auto e: op.value) v.push_back(e.first);
+      for(auto e: op.value) v.push_back(e);
       res.message["size"] = hash->set(v);
       break;
     case operation::OperationType::HDEL:
