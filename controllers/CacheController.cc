@@ -31,6 +31,9 @@ void CacheController::applyOperation(const HttpRequestPtr& req,
             array.append(jvalue[key]);
         }
     }
+    if(jvalue.isArray()) {
+        array = jvalue; 
+    }
 
     std::vector<std::pair<std::string, types::Type>> value;
     value.reserve(array.size());
