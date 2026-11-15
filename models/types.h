@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <list>
+#include <memory>
 #include <string>
 
 #include <jsoncpp/json/value.h>
@@ -19,6 +20,9 @@ enum class Type : char {
 
 class Cacheable {
  public:
+    virtual ~Cacheable() = default;
+    virtual std::unique_ptr<Cacheable> clone() const = 0;
+
     Type type;
 
     virtual Json::Value to_json() = 0;
@@ -27,7 +31,11 @@ class Cacheable {
 class Int : public Cacheable {
  public:
     explicit Int(int64_t n) : _n(n) {
-        type = Type::INT;    
+        type = Type::INT;
+    }
+
+    std::unique_ptr<Cacheable> clone() const override {
+        return std::make_unique<Int>(_n);
     }
 
     void set(int64_t n) {
@@ -58,6 +66,10 @@ class String : public Cacheable {
         type = Type::STRING;
     }
 
+    std::unique_ptr<Cacheable> clone() const override {
+        return std::make_unique<String>(_str);
+    }
+
     Json::Value to_json() override {
         return Json::Value(_str);
     }
@@ -84,10 +96,16 @@ class List : public Cacheable {
         _list.push_back(str);
     }
 
+    std::unique_ptr<Cacheable> clone() const override {
+        auto copy = std::make_unique<List>();
+        copy->_list = _list;
+        return copy;
+    }
+
     Json::Value to_json() override {
         Json::Value json(Json::arrayValue);
         for(auto el : _list) json.append(el);
-        
+
         return json;
     }
 
@@ -126,11 +144,17 @@ class Set : public Cacheable {
     explicit Set(std::string str) : Set() {
         _set.insert(str);
     }
-    
+
+    std::unique_ptr<Cacheable> clone() const override {
+        auto copy = std::make_unique<Set>();
+        copy->_set = _set;
+        return copy;
+    }
+
     Json::Value to_json() override {
         Json::Value json(Json::arrayValue);
         for(auto el : _set) json.append(el);
-        
+
         return json;
     }
 
@@ -156,6 +180,12 @@ class Hash : public Cacheable {
  public:
     Hash() {
         type = Type::HASH;
+    }
+
+    std::unique_ptr<Cacheable> clone() const override {
+        auto copy = std::make_unique<Hash>();
+        copy->_hash = _hash;
+        return copy;
     }
 
     Json::Value to_json() override {

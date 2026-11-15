@@ -5,6 +5,7 @@
 #include <repository/diskrepository.h>
 #include <repository/inmemoryrepository.h>
 
+#include <memory>
 #include <trantor/utils/Logger.h>
 #include <drogon/HttpAppFramework.h>
 #include <stdexcept>
@@ -29,7 +30,7 @@ class CacheService {
 
         _persistentDir = drogon::app().getCustomConfig().get("persistent_path", "/tmp/.hermes/").asString();
         _isPersistent = drogon::app().getCustomConfig().get("persistent", false).asBool();
-        
+
         if(!_isPersistent) return;
 
         for(const auto& entry : std::filesystem::directory_iterator(_persistentDir)) {
@@ -37,7 +38,7 @@ class CacheService {
             LOG_INFO << "Found a backup on disk. Loading...";
             const std::string uuid = entry.path().filename();
             registerRepo(uuid);
-            _persistent[uuid]->loadTo(_repos[uuid]);
+            _persistent[uuid]->loadTo(_repos[uuid].get());
         }
     }
 
@@ -48,12 +49,12 @@ class CacheService {
     }
 
     void registerRepo(const std::string& uuid) {
-        if(_policy == "LFU") _repos[uuid] = new repository::LfuRepository();
-        else _repos[uuid] = new repository::LruRepository(); 
+        if(_policy == "LFU") _repos[uuid] = std::make_unique<repository::LfuRepository>();
+        else _repos[uuid] = std::make_unique<repository::LruRepository>();
 
         if(_isPersistent) {
-            _persistent[uuid] = new repository::DiskRepository(_persistentDir + uuid, _compressionMethod);
-        }    
+            _persistent[uuid] = std::make_unique<repository::DiskRepository>(_persistentDir + uuid, _compressionMethod);
+        }
     }
 
     bool haveRepo(const std::string& uuid) {
@@ -66,8 +67,8 @@ class CacheService {
     }
 
  private:
-    std::unordered_map<std::string, repository::Repository*> _repos;
-    std::unordered_map<std::string, repository::DiskRepository*> _persistent;
+    std::unordered_map<std::string, std::unique_ptr<repository::Repository>> _repos;
+    std::unordered_map<std::string, std::unique_ptr<repository::DiskRepository>> _persistent;
 
     bool _isPersistent;
     std::string _persistentDir;

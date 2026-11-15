@@ -3,6 +3,7 @@
 #include <models/operation.h>
 #include <models/types.h>
 
+#include <memory>
 #include <string>
 #include <trantor/utils/Logger.h>
 
@@ -11,27 +12,21 @@ namespace cache {
 class Cache {
  public:
   Cache(types::Type type = types::Type::STRING) {
-    switch (type)
-    {
-    case types::Type::STRING:
-      _obj = new types::String("");
-      break;
-    case types::Type::INT:
-      _obj = new types::Int(0);
-      break;
-    case types::Type::LIST:
-      _obj = new types::List();
-      break;
-    case types::Type::SET:
-      _obj = new types::Set();
-      break;
-    case types::Type::HASH:
-      _obj = new types::Hash();
-      break;
-    default:
-      break;
-    }
+    _obj = makeValue(type);
   }
+
+  Cache(const Cache& other)
+      : _obj(other._obj ? other._obj->clone() : nullptr) {}
+
+  Cache& operator=(const Cache& other) {
+    if (this != &other) {
+      _obj = other._obj ? other._obj->clone() : nullptr;
+    }
+    return *this;
+  }
+
+  Cache(Cache&&) noexcept = default;
+  Cache& operator=(Cache&&) noexcept = default;
 
   operation::OperationResult apply(const operation::Operation& op) {
     switch (_obj->type)
@@ -39,7 +34,7 @@ class Cache {
     case types::Type::STRING:
       return applyString(op);
     case types::Type::INT:
-      return applyInt(op);    
+      return applyInt(op);
     case types::Type::LIST:
       return applyList(op);
     case types::Type::SET:
@@ -47,16 +42,33 @@ class Cache {
     case types::Type::HASH:
       return applyHash(op);
     default:
-      break;
+      return {};
     }
   }
 
  private:
+  static std::unique_ptr<types::Cacheable> makeValue(types::Type type) {
+    switch (type)
+    {
+    case types::Type::STRING:
+      return std::make_unique<types::String>("");
+    case types::Type::INT:
+      return std::make_unique<types::Int>(0);
+    case types::Type::LIST:
+      return std::make_unique<types::List>();
+    case types::Type::SET:
+      return std::make_unique<types::Set>();
+    case types::Type::HASH:
+      return std::make_unique<types::Hash>();
+    default:
+      return std::make_unique<types::String>("");
+    }
+  }
 
   operation::OperationResult applyString(const operation::Operation& op) {
     operation::OperationResult res;
 
-    types::String* str = static_cast<types::String*>(_obj);
+    auto* str = static_cast<types::String*>(_obj.get());
 
     switch (op.type)
     {
@@ -65,7 +77,7 @@ class Cache {
       break;
     case operation::OperationType::SET:
       if(op.value.back().second == types::Type::INT) {
-        _obj = new types::Int(stoll(op.value.back().first));
+        _obj = std::make_unique<types::Int>(stoll(op.value.back().first));
         break;
       }
       str->set(op.value.back().first);
@@ -74,15 +86,15 @@ class Cache {
     case operation::OperationType::RPUSH:
     case operation::OperationType::LPOP:
     case operation::OperationType::RPOP:
-      _obj = new types::List(str->get()); 
+      _obj = std::make_unique<types::List>(str->get());
       res = applyList(op);
       break;
     case operation::OperationType::SADD:
-      _obj = new types::Set(str->get());
+      _obj = std::make_unique<types::Set>(str->get());
       res = applySet(op);
       break;
     case operation::OperationType::HSET:
-      _obj = new types::Hash();
+      _obj = std::make_unique<types::Hash>();
       res = applyHash(op);
       break;
     default:
@@ -94,8 +106,8 @@ class Cache {
   operation::OperationResult applyInt(const operation::Operation& op) {
     operation::OperationResult res;
 
-    types::Int* num = static_cast<types::Int*>(_obj);
-  
+    auto* num = static_cast<types::Int*>(_obj.get());
+
     switch (op.type)
     {
     case operation::OperationType::GET:
@@ -120,7 +132,7 @@ class Cache {
   operation::OperationResult applyList(const operation::Operation& op) {
     operation::OperationResult res;
 
-    types::List* list = static_cast<types::List*>(_obj);
+    auto* list = static_cast<types::List*>(_obj.get());
 
     switch (op.type)
     {
@@ -148,7 +160,7 @@ class Cache {
   operation::OperationResult applySet(const operation::Operation& op) {
     operation::OperationResult res;
 
-    types::Set* set = static_cast<types::Set*>(_obj);
+    auto* set = static_cast<types::Set*>(_obj.get());
 
     switch (op.type)
     {
@@ -173,7 +185,7 @@ class Cache {
   operation::OperationResult applyHash(const operation::Operation& op) {
     operation::OperationResult res;
 
-    types::Hash* hash = static_cast<types::Hash*>(_obj);
+    auto* hash = static_cast<types::Hash*>(_obj.get());
     std::vector<std::pair<std::string, types::Type>> v;
 
     switch (op.type)
@@ -190,15 +202,14 @@ class Cache {
       break;
     case operation::OperationType::HDEL:
       for(auto key: op.value) res.message[key.first] = hash->del(key.first);
-      break;  
+      break;
     default:
       break;
     }
     return res;
   }
 
-  types::Cacheable* _obj;
+  std::unique_ptr<types::Cacheable> _obj;
 };
-
 
 };

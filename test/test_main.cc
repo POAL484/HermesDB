@@ -4,7 +4,6 @@
 #include <jsoncpp/json/json.h>
 
 #include <models/cacheservice.h>
-#include <array>
 #include <filesystem>
 #include <fstream>
 #include <snappy.h>
@@ -142,6 +141,17 @@ DROGON_TEST(Hash) {
     auto deleted = service.apply(uuid, {operation::OperationType::HDEL, "key", {{"key1", types::Type::STRING}}}).message;
     CHECK(deleted.get("key1", "").asString() == "value1");
 
+}
+
+DROGON_TEST(CacheCopySemantics) {
+    cache::Cache original(types::Type::STRING);
+    original.apply({operation::OperationType::SET, "key", {{"hello", types::Type::STRING}}});
+
+    cache::Cache copy = original;
+    copy.apply({operation::OperationType::SET, "key", {{"world", types::Type::STRING}}});
+
+    CHECK(original.apply({operation::OperationType::GET, "key"}).message.asString() == "hello");
+    CHECK(copy.apply({operation::OperationType::GET, "key"}).message.asString() == "world");
 }
 
 DROGON_TEST(Lru) 
