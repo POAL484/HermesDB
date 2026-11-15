@@ -1,4 +1,5 @@
-#include "diskrepository.h"
+#include <repository/diskrepository.h>
+
 #include <algorithm>
 #include <array>
 #include <limits>

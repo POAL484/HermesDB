@@ -1,9 +1,9 @@
 #pragma once
 
 #include <models/operation.h>
-#include <models/repository.h>
-#include <models/diskrepository.h>
-#include <models/inmemoryrepository.h>
+#include <repository/repository.h>
+#include <repository/diskrepository.h>
+#include <repository/inmemoryrepository.h>
 
 #include <trantor/utils/Logger.h>
 #include <drogon/HttpAppFramework.h>

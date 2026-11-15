@@ -1,9 +1,5 @@
 #include "CacheController.h"
 
-#include <models/repository.h>
-#include <models/types.h>
-#include <models/operation.h>
-
 #include <drogon/HttpResponse.h>
 #include <jsoncpp/json/json.h>
 

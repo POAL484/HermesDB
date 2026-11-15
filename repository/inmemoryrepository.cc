@@ -1,4 +1,4 @@
-#include <models/inmemoryrepository.h>
+#include <repository/inmemoryrepository.h>
 
 namespace repository {
 
