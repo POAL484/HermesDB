@@ -28,6 +28,10 @@ class Cache {
   Cache(Cache&&) noexcept = default;
   Cache& operator=(Cache&&) noexcept = default;
 
+  types::Type type() const {
+    return _obj ? _obj->type : types::Type::STRING;
+  }
+
   operation::OperationResult apply(const operation::Operation& op) {
     switch (_obj->type)
     {

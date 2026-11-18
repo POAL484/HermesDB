@@ -2,6 +2,8 @@
 
 #include <drogon/HttpResponse.h>
 #include <jsoncpp/json/json.h>
+#include <query/syntaxmodule.h>
+#include <query/semanticmodule.h>
 
 using namespace drogon;
 
@@ -11,38 +13,28 @@ void CacheController::applyOperation(const HttpRequestPtr& req,
     if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse(""));
     
     auto json = req->getJsonObject();
-    operation::OperationType type = _mapper[json->get("op", "").asString()];
-    const std::string key = json->operator[]("key").asString();
-    const Json::Value& jvalue = json->operator[]("value");
-
-    Json::Value array;
-
-    if(!jvalue.isObject() && !jvalue.isArray()) {
-        return callback(makeBadRequestResponse("Value must be json object or array."));
+    if(!json) {
+        return callback(makeBadRequestResponse("Request body must be valid JSON."));
     }
 
-    if(jvalue.isObject()) {
-        for(auto key : jvalue.getMemberNames()) {
-            array.append(key);
-            array.append(jvalue[key]);
-        }
-    }
-    if(jvalue.isArray()) {
-        array = jvalue; 
+    operation::Operation operation;
+    try {
+        operation = syntax::SyntaxModule::parse(*json);
+    } catch(const syntax::SyntaxError& error) {
+        return callback(makeBadRequestResponse(error.what()));
     }
 
-    std::vector<std::pair<std::string, types::Type>> value;
-    value.reserve(array.size());
-    for(int i = 0; i < array.size(); ++i) {
-        auto str = array[i].asString();
-
-        types::Type type = types::Type::STRING;
-        if(array[i].isNumeric()) type = types::Type::INT; 
-
-        value.push_back({str, type});
+    semantic::SemanticModule::KeyTypes key_types;
+    if(_service->haveKey(uuid, operation.key)) {
+        key_types[operation.key] = _service->keyType(uuid, operation.key);
+    }
+    try {
+        semantic::SemanticModule::validate(operation, key_types);
+    } catch(const semantic::SemanticError& error) {
+        return callback(makeBadRequestResponse(error.what()));
     }
 
-    operation::OperationResult res = _service->apply(uuid, {type, key, value});
+    operation::OperationResult res = _service->apply(uuid, operation);
 
     Json::Value json_response;
     json_response["status"] = 200;
@@ -89,4 +81,3 @@ HttpResponsePtr CacheController::makeBadRequestResponse(const std::string& msg="
     
     return resp;
 }
-

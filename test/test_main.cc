@@ -4,6 +4,8 @@
 #include <jsoncpp/json/json.h>
 
 #include <models/cacheservice.h>
+#include <query/syntaxmodule.h>
+#include <query/semanticmodule.h>
 #include <filesystem>
 #include <fstream>
 #include <snappy.h>
@@ -40,6 +42,15 @@ DROGON_TEST(CRUD)
 
     value = service.apply(uuid, {operation::OperationType::GET, "key"}).message.asString();
     CHECK(value.empty());
+}
+
+DROGON_TEST(GetMissingKeyReturnsNull) {
+    cache::CacheService service;
+    const std::string uuid = service.registerRepo();
+
+    const auto result = service.apply(uuid,
+                                      {operation::OperationType::GET, "missing"});
+    CHECK(result.message.isNull());
 }
 
 DROGON_TEST(Int) {
@@ -226,7 +237,27 @@ DROGON_TEST(PersistenceLegacySnappy) {
     std::filesystem::remove(path);
 }
 
-int main(int argc, char** argv) 
+DROGON_TEST(SyntaxAndSemanticModules) {
+    Json::Value request;
+    request["op"] = "INC";
+    request["key"] = "counter";
+    request["value"] = Json::arrayValue;
+    request["value"].append(3);
+
+    const auto parsed = syntax::SyntaxModule::parse(request);
+    CHECK(parsed.type == operation::OperationType::INC);
+    CHECK(parsed.value.size() == 1);
+    CHECK(parsed.value[0].second == types::Type::INT);
+
+    semantic::SemanticModule::KeyTypes key_types;
+    key_types["counter"] = types::Type::INT;
+    CHECK_NOTHROW(semantic::SemanticModule::validate(parsed, key_types));
+
+    key_types["counter"] = types::Type::STRING;
+    CHECK_THROWS(semantic::SemanticModule::validate(parsed, key_types));
+}
+
+int main(int argc, char** argv)
 {
     std::promise<void> p1;
     std::future<void> f1 = p1.get_future();

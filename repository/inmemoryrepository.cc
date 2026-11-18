@@ -35,6 +35,10 @@ namespace repository {
             return it->second.first.apply(op);
         }
 
+        if(op.type == operation::OperationType::GET) {
+            return {Json::Value()};
+        }
+
         if(_hashtable.size() >= _capacity) {
             std::string leastRecentlyKey = _keys.back();
             _hashtable.erase(leastRecentlyKey);
@@ -91,6 +95,10 @@ namespace repository {
         auto it = _cache.find(op.key);
         if(it != _cache.end()) {
             return it->second.second->second.apply(op);
+        }
+
+        if(op.type == operation::OperationType::GET) {
+            return {Json::Value()};
         }
 
         if(_cache.size() >= _capacity) {

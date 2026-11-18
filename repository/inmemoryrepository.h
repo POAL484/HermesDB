@@ -34,6 +34,14 @@ class LruRepository : public InMemoryRepository {
 
     void moveToRecentlyUsed(std::unordered_map<std::string, Value>::iterator it);
     operation::OperationResult deleteKey(const std::string& key);
+ public:
+    bool contains(const std::string& key) const override {
+      return _hashtable.find(key) != _hashtable.end();
+    }
+    types::Type type(const std::string& key) const override {
+      const auto it = _hashtable.find(key);
+      return it == _hashtable.end() ? types::Type::STRING : it->second.first.type();
+    }
 };
 
 class LfuRepository : public InMemoryRepository {
@@ -52,6 +60,15 @@ class LfuRepository : public InMemoryRepository {
     void insert(int freq, std::string key, cache::Cache value);
     void updateFreq(const std::string& key);
     operation::OperationResult deleteKey(const std::string& key);
+ public:
+    bool contains(const std::string& key) const override {
+      return _cache.find(key) != _cache.end();
+    }
+    types::Type type(const std::string& key) const override {
+      const auto it = _cache.find(key);
+      if(it == _cache.end()) return types::Type::STRING;
+      return it->second.second->second.type();
+    }
 
     int _minfreq;
 };

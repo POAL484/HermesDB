@@ -66,6 +66,15 @@ class CacheService {
         return _repos[uuid]->apply(op);
     }
 
+    bool haveKey(const std::string& uuid, const std::string& key) {
+        return _repos.count(uuid) && _repos[uuid]->contains(key);
+    }
+
+    types::Type keyType(const std::string& uuid, const std::string& key) {
+        if(!_repos.count(uuid)) return types::Type::STRING;
+        return _repos[uuid]->type(key);
+    }
+
  private:
     std::unordered_map<std::string, std::unique_ptr<repository::Repository>> _repos;
     std::unordered_map<std::string, std::unique_ptr<repository::DiskRepository>> _persistent;
