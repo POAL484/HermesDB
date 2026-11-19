@@ -9,6 +9,7 @@
 #include <trantor/utils/Logger.h>
 #include <drogon/HttpAppFramework.h>
 #include <stdexcept>
+#include <chrono>
 
 namespace cache {
 
@@ -50,6 +51,7 @@ class CacheService {
 
     void registerRepo(const std::string& uuid) {
         if(_policy == "LFU") _repos[uuid] = std::make_unique<repository::LfuRepository>();
+        else if(_policy == "TLRU") _repos[uuid] = std::make_unique<repository::TlruRepository>();
         else _repos[uuid] = std::make_unique<repository::LruRepository>();
 
         if(_isPersistent) {
@@ -62,8 +64,16 @@ class CacheService {
     }
 
     operation::OperationResult apply(const std::string& uuid, const operation::Operation& op) {
-        if(_isPersistent) _persistent[uuid]->save(op);
-        return _repos[uuid]->apply(op);
+        operation::Operation recordedOp = op;
+        if(recordedOp.type == operation::OperationType::SET &&
+           recordedOp.ttl > 0 && recordedOp.expiresAt == 0) {
+            const auto now = std::chrono::system_clock::now().time_since_epoch();
+            recordedOp.expiresAt =
+                std::chrono::duration_cast<std::chrono::milliseconds>(now).count() +
+                recordedOp.ttl * 1000;
+        }
+        if(_isPersistent) _persistent[uuid]->save(recordedOp);
+        return _repos[uuid]->apply(recordedOp);
     }
 
     bool haveKey(const std::string& uuid, const std::string& key) {

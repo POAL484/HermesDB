@@ -50,6 +50,17 @@ operation::Operation SyntaxModule::parse(const Json::Value& request) {
         throw SyntaxError("Field 'key' must not be empty");
     }
 
+    std::int64_t ttl = 0;
+    if(request.isMember("ttl")) {
+        if(!request["ttl"].isIntegral()) {
+            throw SyntaxError("Field 'ttl' must be a non-negative integer");
+        }
+        ttl = request["ttl"].asInt64();
+        if(ttl < 0) {
+            throw SyntaxError("Field 'ttl' must be a non-negative integer");
+        }
+    }
+
     const operation::OperationType type = parseOperation(request["op"].asString());
     if(!request.isMember("value")) {
         throw SyntaxError("Field 'value' must be present");
@@ -123,7 +134,7 @@ operation::Operation SyntaxModule::parse(const Json::Value& request) {
             break;
     }
 
-    return {type, request["key"].asString(), std::move(values)};
+    return {type, request["key"].asString(), std::move(values), ttl};
 }
 
 bool SyntaxModule::validate(const Json::Value& request) {

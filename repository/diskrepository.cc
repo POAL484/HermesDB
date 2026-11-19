@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <limits>
 #include <memory>
 #include <stdexcept>
@@ -13,7 +14,7 @@
 
 namespace repository {
     namespace {
-        constexpr std::string_view recordPrefix = "HDB1:";
+        constexpr std::string_view recordPrefix = "HDB2:";
         constexpr char escapeCharacter = '\x1b';
 
         std::string gzipCompress(const std::string& input) {
@@ -227,8 +228,15 @@ namespace repository {
 
     void DiskRepository::save(const operation::Operation& op) {
         std::stringstream oss;
-        oss << (int)op.type << _separator << op.key;
+        std::int64_t expiresAt = op.expiresAt;
+        if(op.type == operation::OperationType::SET && expiresAt == 0 && op.ttl > 0) {
+            const auto now = std::chrono::system_clock::now().time_since_epoch();
+            expiresAt = std::chrono::duration_cast<std::chrono::milliseconds>(now).count() +
+                        op.ttl * 1000;
+        }
+        oss << "HDB2" << _separator << (int)op.type << _separator << op.key;
         for(auto value : op.value) oss << _separator << value.first << _separator << (int)value.second;
+        oss << _separator << op.ttl << _separator << expiresAt;
         const std::string compressed = compress(oss.str(), _compressionMethod);
 
         std::ofstream ofs(_filepath, std::ios_base::app | std::ios_base::binary);
@@ -241,25 +249,34 @@ namespace repository {
         std::string line;
         if(!std::getline(ifs, line)) return false;
         
-        std::string uncompresed;
-        if(line.starts_with(recordPrefix)) {
-            const size_t methodEnd = line.find(':', recordPrefix.size());
-            if(methodEnd == std::string::npos) {
-                throw std::runtime_error("Invalid persistent repository record header");
-            }
-            const std::string_view method(line.data() + recordPrefix.size(), methodEnd - recordPrefix.size());
-            uncompresed = decompress(unescapeRecord(std::string_view(line).substr(methodEnd + 1)), method);
-        } else {
-            uncompresed = decompress(line, "Snappy");
+        if(!line.starts_with(recordPrefix)) {
+            throw std::runtime_error("Unsupported persistent repository record format");
         }
+
+        const size_t methodEnd = line.find(':', recordPrefix.size());
+        if(methodEnd == std::string::npos) {
+            throw std::runtime_error("Invalid persistent repository record header");
+        }
+        const std::string_view method(line.data() + recordPrefix.size(), methodEnd - recordPrefix.size());
+        const std::string uncompresed =
+            decompress(unescapeRecord(std::string_view(line).substr(methodEnd + 1)), method);
 
         auto sp = std::views::split(uncompresed, _separator) | std::ranges::to<std::vector<std::string>>();
-        op.type = (operation::OperationType)(std::stoi(sp[0]));
-        op.key = sp[1];
-
-        for(int i = 2; i+1 < sp.size(); i += 2) {
-            op.value.push_back({sp[i], (types::Type)(std::stoi(sp[i+1]))});
+        if(sp.size() < 5 || sp[0] != "HDB2" || (sp.size() - 5) % 2 != 0) {
+            throw std::runtime_error("Invalid persistent repository record payload");
         }
+
+        op.value.clear();
+        op.ttl = 0;
+        op.expiresAt = 0;
+        op.type = (operation::OperationType)(std::stoi(sp[1]));
+        op.key = sp[2];
+        const size_t valueEnd = sp.size() - 2;
+        for(size_t i = 3; i + 1 < valueEnd; i += 2) {
+            op.value.push_back({sp[i], (types::Type)(std::stoi(sp[i + 1]))});
+        }
+        op.ttl = std::stoll(sp[sp.size() - 2]);
+        op.expiresAt = std::stoll(sp.back());
 
         return true;
     }  

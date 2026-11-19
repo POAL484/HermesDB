@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <fstream>
 #include <snappy.h>
+#include <chrono>
+#include <thread>
 
 using namespace drogon;
 
@@ -197,6 +199,53 @@ DROGON_TEST(Lfu)
     CHECK(value.empty());
 }
 
+DROGON_TEST(TlruTtl) {
+    repository::TlruRepository repo(2);
+
+    repo.apply({operation::OperationType::SET, "short", {{"value", types::Type::STRING}}, 1});
+    CHECK(repo.apply({operation::OperationType::GET, "short"}).message.asString() == "value");
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1100));
+    CHECK(repo.apply({operation::OperationType::GET, "short"}).message.isNull());
+}
+
+DROGON_TEST(TlruLruEviction) {
+    repository::TlruRepository repo(2);
+
+    repo.apply({operation::OperationType::SET, "one", {{"1", types::Type::STRING}}, 0});
+    repo.apply({operation::OperationType::GET, "one"});
+    repo.apply({operation::OperationType::SET, "two", {{"2", types::Type::STRING}}, 0});
+    repo.apply({operation::OperationType::SET, "three", {{"3", types::Type::STRING}}, 0});
+
+    CHECK(repo.apply({operation::OperationType::GET, "one"}).message.isNull());
+    CHECK(repo.apply({operation::OperationType::GET, "three"}).message.asString() == "3");
+}
+
+DROGON_TEST(TlruPersistenceKeepsAbsoluteExpiration) {
+    const auto path = std::filesystem::temp_directory_path() /
+                      ("hermes-tlru-" + drogon::utils::getUuid());
+    const auto deadline = std::chrono::system_clock::now() +
+                          std::chrono::milliseconds(1500);
+    const auto expiresAt = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               deadline.time_since_epoch())
+                               .count();
+
+    repository::DiskRepository disk(path.string(), repository::CompressionMethod::Snappy);
+    disk.save({operation::OperationType::SET, "key",
+               {{"value", types::Type::STRING}}, 60, expiresAt});
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(700));
+    repository::TlruRepository restored;
+    disk.loadTo(&restored);
+
+    CHECK(restored.contains("key"));
+    std::this_thread::sleep_for(std::chrono::milliseconds(900));
+    CHECK(!restored.contains("key"));
+    CHECK(restored.apply({operation::OperationType::GET, "key"}).message.isNull());
+
+    std::filesystem::remove(path);
+}
+
 DROGON_TEST(PersistenceCompression) {
     const std::array methods = {
         repository::CompressionMethod::Snappy,
@@ -218,7 +267,7 @@ DROGON_TEST(PersistenceCompression) {
     }
 }
 
-DROGON_TEST(PersistenceLegacySnappy) {
+DROGON_TEST(PersistenceRejectsLegacyFormat) {
     const auto path = std::filesystem::temp_directory_path() /
                       ("hermes-legacy-snappy-" + drogon::utils::getUuid());
     const std::string serialized = "1;key;legacy value;0";
@@ -232,8 +281,13 @@ DROGON_TEST(PersistenceLegacySnappy) {
 
     repository::DiskRepository disk(path.string(), repository::CompressionMethod::Lz4);
     repository::LruRepository restored;
-    disk.loadTo(&restored);
-    CHECK(restored.apply({operation::OperationType::GET, "key"}).message.asString() == "legacy value");
+    bool rejected = false;
+    try {
+        disk.loadTo(&restored);
+    } catch(const std::runtime_error&) {
+        rejected = true;
+    }
+    CHECK(rejected);
     std::filesystem::remove(path);
 }
 

@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <list>
 #include <mutex>
+#include <tuple>
+#include <chrono>
 #include <trantor/utils/Logger.h>
 
 namespace repository {
@@ -72,5 +74,31 @@ class LfuRepository : public InMemoryRepository {
 
     int _minfreq;
 };
+
+class TlruRepository : public InMemoryRepository {
+ public:
+    using InMemoryRepository::InMemoryRepository;
+
+    operation::OperationResult apply(const operation::Operation& op) override;
+
+ private:
+    using Value = std::tuple<cache::Cache,
+                             std::list<std::string>::iterator,
+                             std::chrono::steady_clock::time_point>;
+
+    std::unordered_map<std::string, Value> _hashtable;
+    std::list<std::string> _keys;
+
+    bool isExpired(const Value& value) const;
+    void purgeExpired();
+    void moveToRecentlyUsed(std::unordered_map<std::string, Value>::iterator it);
+    operation::OperationResult deleteKey(const std::string& key);
+
+ public:
+    bool contains(const std::string& key) const override;
+    types::Type type(const std::string& key) const override;
+};
+
+using TLRURepository = TlruRepository;
 
 }
