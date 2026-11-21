@@ -1,6 +1,83 @@
 {
   "nodes": [
     {
+      "id": "cmakelists_cache_service",
+      "label": "cache_service Executable",
+      "file_type": "code",
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cmakelists_hermes_tests",
+      "label": "hermes_tests Target",
+      "file_type": "code",
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cmakelists_drogon",
+      "label": "Drogon Framework Dependency",
+      "file_type": "code",
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cmakelists_snappy",
+      "label": "Snappy Dependency",
+      "file_type": "code",
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cmakelists_zlib",
+      "label": "ZLIB Dependency",
+      "file_type": "code",
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cmakelists_lz4",
+      "label": "LZ4 Dependency",
+      "file_type": "code",
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cmakelists_drogon_view_generation",
+      "label": "Drogon View Generation",
+      "file_type": "code",
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "readme_hermesdb",
       "label": "HermesDB",
       "file_type": "concept",
@@ -9,11 +86,12 @@
       "source_url": null,
       "captured_at": null,
       "author": null,
-      "contributor": null
+      "contributor": null,
+      "rationale": "The project aims to be a fast and reliable intermediary between storage and an application."
     },
     {
-      "id": "readme_nosql_database",
-      "label": "NoSQL Database",
+      "id": "readme_mnemosynedb",
+      "label": "MnemosyneDB",
       "file_type": "concept",
       "source_file": "/home/zut3/code/HermesDB/README.md",
       "source_location": null,
@@ -34,19 +112,8 @@
       "contributor": null
     },
     {
-      "id": "readme_user_storage_creation_endpoint",
-      "label": "User Storage Creation Endpoint",
-      "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/README.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
       "id": "readme_uuid_scoped_storage",
-      "label": "UUID-Scoped Storage",
+      "label": "UUID-Scoped User Storage",
       "file_type": "concept",
       "source_file": "/home/zut3/code/HermesDB/README.md",
       "source_location": null,
@@ -56,31 +123,9 @@
       "contributor": null
     },
     {
-      "id": "readme_storage_operation_endpoint",
-      "label": "Storage Operation Endpoint",
-      "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/README.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "readme_key_value_data_types",
-      "label": "Key-Value Data Types",
-      "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/README.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "readme_cache_eviction_policy",
+      "id": "readme_cache_policy",
       "label": "Cache Eviction Policy",
-      "file_type": "concept",
+      "file_type": "rationale",
       "source_file": "/home/zut3/code/HermesDB/README.md",
       "source_location": null,
       "source_url": null,
@@ -89,9 +134,9 @@
       "contributor": null
     },
     {
-      "id": "readme_lru_cache_policy",
+      "id": "readme_lru",
       "label": "LRU Cache Policy",
-      "file_type": "concept",
+      "file_type": "rationale",
       "source_file": "/home/zut3/code/HermesDB/README.md",
       "source_location": null,
       "source_url": null,
@@ -100,9 +145,9 @@
       "contributor": null
     },
     {
-      "id": "readme_lfu_cache_policy",
+      "id": "readme_lfu",
       "label": "LFU Cache Policy",
-      "file_type": "concept",
+      "file_type": "rationale",
       "source_file": "/home/zut3/code/HermesDB/README.md",
       "source_location": null,
       "source_url": null,
@@ -111,9 +156,9 @@
       "contributor": null
     },
     {
-      "id": "readme_compression_methods",
-      "label": "Record Compression Methods",
-      "file_type": "concept",
+      "id": "readme_tlru",
+      "label": "TLRU Cache Policy",
+      "file_type": "rationale",
       "source_file": "/home/zut3/code/HermesDB/README.md",
       "source_location": null,
       "source_url": null,
@@ -122,7 +167,40 @@
       "contributor": null
     },
     {
-      "id": "readme_snappy_compression",
+      "id": "readme_ttl",
+      "label": "Time-to-Live Expiration",
+      "file_type": "rationale",
+      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_persistence",
+      "label": "Persistent Storage",
+      "file_type": "rationale",
+      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_compression_method",
+      "label": "Record Compression Method",
+      "file_type": "rationale",
+      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_snappy",
       "label": "Snappy Compression",
       "file_type": "concept",
       "source_file": "/home/zut3/code/HermesDB/README.md",
@@ -133,18 +211,18 @@
       "contributor": null
     },
     {
-      "id": "readme_gzip_compression",
+      "id": "readme_gzip",
       "label": "GZIP Compression",
       "file_type": "concept",
       "source_file": "/home/zut3/code/HermesDB/README.md",
       "source_location": null,
       "source_url": null,
+      "captured_at": null,
       "author": null,
-      "contributor": null,
-      "captured_at": null
+      "contributor": null
     },
     {
-      "id": "readme_lz4_compression",
+      "id": "readme_lz4",
       "label": "LZ4 Compression",
       "file_type": "concept",
       "source_file": "/home/zut3/code/HermesDB/README.md",
@@ -155,10 +233,10 @@
       "contributor": null
     },
     {
-      "id": "readme_persistent_storage",
-      "label": "Persistent Storage",
+      "id": "query_lang_mhrl",
+      "label": "Mnemosyne Hermes Requests Language (MHRL)",
       "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -166,21 +244,10 @@
       "contributor": null
     },
     {
-      "id": "readme_mnemosynedb",
-      "label": "MnemosyneDB",
+      "id": "query_lang_response_envelope",
+      "label": "MHRL Response Envelope",
       "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/README.md",
-      "source_location": null,
-      "source_url": "https://github.com/POAL484/MnemosyneDB/",
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "readme_cmake_build",
-      "label": "CMake Build",
-      "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -188,21 +255,10 @@
       "contributor": null
     },
     {
-      "id": "readme_drogon_framework",
-      "label": "Drogon Framework",
+      "id": "query_lang_error_code_taxonomy",
+      "label": "MHRL Error Code Taxonomy",
       "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/README.md",
-      "source_location": null,
-      "source_url": "https://github.com/drogonframework/drogon",
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "readme_test_suite",
-      "label": "CTest Test Suite",
-      "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -210,10 +266,10 @@
       "contributor": null
     },
     {
-      "id": "cmakelists_cache_service_target",
-      "label": "cache_service Executable Target",
+      "id": "query_lang_json_set_encoding",
+      "label": "JSON Set Encoding",
       "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -221,10 +277,10 @@
       "contributor": null
     },
     {
-      "id": "cmakelists_cpp23_standard",
-      "label": "C++23 Standard",
+      "id": "query_lang_get_operation",
+      "label": "GET Operation",
       "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -232,108 +288,236 @@
       "contributor": null
     },
     {
-      "id": "cmakelists_drogon_dependency",
-      "label": "Drogon Build Dependency",
+      "id": "query_lang_set_operation",
+      "label": "SET Operation",
       "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "source_url": null,
-      "author": null,
-      "contributor": null,
-      "captured_at": null
-    },
-    {
-      "id": "cmakelists_snappy_dependency",
-      "label": "Snappy Build Dependency",
-      "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
-      "source_location": null,
-      "source_url": null,
-      "author": null,
-      "contributor": null,
-      "captured_at": null
-    },
-    {
-      "id": "cmakelists_zlib_dependency",
-      "label": "ZLIB Build Dependency",
-      "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
-      "source_location": null,
-      "source_url": null,
-      "author": null,
-      "contributor": null,
-      "captured_at": null
-    },
-    {
-      "id": "cmakelists_lz4_dependency",
-      "label": "LZ4 Build Dependency",
-      "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
-      "source_location": null,
-      "source_url": null,
-      "author": null,
-      "contributor": null,
-      "captured_at": null
-    },
-    {
-      "id": "cmakelists_application_source_directories",
-      "label": "Application Source Directories",
-      "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
-      "source_location": null,
-      "source_url": null,
+      "captured_at": null,
       "author": null,
       "contributor": null
     },
     {
-      "id": "cmakelists_drogon_generated_views",
-      "label": "Drogon-Generated Views",
+      "id": "query_lang_del_operation",
+      "label": "DEL Operation",
       "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "source_url": null,
+      "captured_at": null,
       "author": null,
       "contributor": null
     },
     {
-      "id": "cmakelists_hermes_tests_target",
-      "label": "hermes_tests Executable Target",
+      "id": "query_lang_getitem_operation",
+      "label": "GETITEM Operation",
       "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "source_url": null,
+      "captured_at": null,
       "author": null,
       "contributor": null
     },
     {
-      "id": "cmakelists_drogon_test_registration",
-      "label": "Drogon Test Registration",
+      "id": "query_lang_ismember_operation",
+      "label": "ISMEMBER Operation",
       "file_type": "concept",
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "query_lang_size_operation",
+      "label": "SIZE Operation",
+      "file_type": "concept",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "query_lang_inc_dec_operation",
+      "label": "INC / DEC Operations",
+      "file_type": "concept",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "query_lang_lpush_rpush_operation",
+      "label": "LPUSH / RPUSH Operations",
+      "file_type": "concept",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "query_lang_lpop_rpop_operation",
+      "label": "LPOP / RPOP Operations",
+      "file_type": "concept",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "query_lang_sadd_operation",
+      "label": "SADD Operation",
+      "file_type": "concept",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "query_lang_srem_operation",
+      "label": "SREM Operation",
+      "file_type": "concept",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "query_lang_hset_operation",
+      "label": "HSET Operation",
+      "file_type": "concept",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "query_lang_hdel_operation",
+      "label": "HDEL Operation",
+      "file_type": "concept",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
       "author": null,
       "contributor": null
     }
   ],
   "edges": [
     {
-      "source": "readme_hermesdb",
-      "target": "readme_nosql_database",
-      "relation": "conceptually_related_to",
+      "source": "cmakelists_cache_service",
+      "target": "cmakelists_drogon",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "readme_hermesdb",
-      "target": "readme_http_api",
-      "relation": "implements",
+      "source": "cmakelists_cache_service",
+      "target": "cmakelists_snappy",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "cmakelists_cache_service",
+      "target": "cmakelists_zlib",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "cmakelists_cache_service",
+      "target": "cmakelists_lz4",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "cmakelists_cache_service",
+      "target": "cmakelists_drogon_view_generation",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "cmakelists_hermes_tests",
+      "target": "cmakelists_drogon",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "cmakelists_hermes_tests",
+      "target": "cmakelists_snappy",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "cmakelists_hermes_tests",
+      "target": "cmakelists_zlib",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "cmakelists_hermes_tests",
+      "target": "cmakelists_lz4",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "cmakelists_hermes_tests",
+      "target": "cmakelists_cache_service",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
       "source_location": null,
       "weight": 1.0
     },
@@ -348,8 +532,8 @@
       "weight": 1.0
     },
     {
-      "source": "readme_http_api",
-      "target": "readme_user_storage_creation_endpoint",
+      "source": "readme_hermesdb",
+      "target": "readme_http_api",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -359,26 +543,6 @@
     },
     {
       "source": "readme_http_api",
-      "target": "readme_storage_operation_endpoint",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_user_storage_creation_endpoint",
-      "target": "readme_uuid_scoped_storage",
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_storage_operation_endpoint",
       "target": "readme_uuid_scoped_storage",
       "relation": "references",
       "confidence": "EXTRACTED",
@@ -388,8 +552,8 @@
       "weight": 1.0
     },
     {
-      "source": "readme_uuid_scoped_storage",
-      "target": "readme_key_value_data_types",
+      "source": "readme_cache_policy",
+      "target": "readme_lru",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -398,8 +562,8 @@
       "weight": 1.0
     },
     {
-      "source": "readme_hermesdb",
-      "target": "readme_cache_eviction_policy",
+      "source": "readme_cache_policy",
+      "target": "readme_lfu",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -408,8 +572,8 @@
       "weight": 1.0
     },
     {
-      "source": "readme_cache_eviction_policy",
-      "target": "readme_lru_cache_policy",
+      "source": "readme_cache_policy",
+      "target": "readme_tlru",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -418,8 +582,8 @@
       "weight": 1.0
     },
     {
-      "source": "readme_cache_eviction_policy",
-      "target": "readme_lfu_cache_policy",
+      "source": "readme_tlru",
+      "target": "readme_ttl",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -428,8 +592,8 @@
       "weight": 1.0
     },
     {
-      "source": "readme_hermesdb",
-      "target": "readme_compression_methods",
+      "source": "readme_persistence",
+      "target": "readme_compression_method",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -438,8 +602,8 @@
       "weight": 1.0
     },
     {
-      "source": "readme_compression_methods",
-      "target": "readme_snappy_compression",
+      "source": "readme_compression_method",
+      "target": "readme_snappy",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -448,8 +612,8 @@
       "weight": 1.0
     },
     {
-      "source": "readme_compression_methods",
-      "target": "readme_gzip_compression",
+      "source": "readme_compression_method",
+      "target": "readme_gzip",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -458,8 +622,8 @@
       "weight": 1.0
     },
     {
-      "source": "readme_compression_methods",
-      "target": "readme_lz4_compression",
+      "source": "readme_compression_method",
+      "target": "readme_lz4",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -468,187 +632,244 @@
       "weight": 1.0
     },
     {
-      "source": "readme_hermesdb",
-      "target": "readme_persistent_storage",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_response_envelope",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "readme_persistent_storage",
-      "target": "readme_compression_methods",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_error_code_taxonomy",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "readme_cmake_build",
-      "target": "readme_drogon_framework",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_json_set_encoding",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "readme_cmake_build",
-      "target": "cmakelists_cache_service_target",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_get_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "readme_test_suite",
-      "target": "readme_cmake_build",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_set_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/README.md",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_cache_service_target",
-      "target": "cmakelists_cpp23_standard",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_del_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_cache_service_target",
-      "target": "cmakelists_drogon_dependency",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_getitem_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_cache_service_target",
-      "target": "cmakelists_snappy_dependency",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_ismember_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_cache_service_target",
-      "target": "cmakelists_zlib_dependency",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_size_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_cache_service_target",
-      "target": "cmakelists_lz4_dependency",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_inc_dec_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_cache_service_target",
-      "target": "cmakelists_application_source_directories",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_lpush_rpush_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_cache_service_target",
-      "target": "cmakelists_drogon_generated_views",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_lpop_rpop_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_hermes_tests_target",
-      "target": "cmakelists_drogon_test_registration",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_sadd_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_hermes_tests_target",
-      "target": "cmakelists_drogon_dependency",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_srem_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_hermes_tests_target",
-      "target": "cmakelists_snappy_dependency",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_hset_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_hermes_tests_target",
-      "target": "cmakelists_zlib_dependency",
+      "source": "query_lang_mhrl",
+      "target": "query_lang_hdel_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "cmakelists_hermes_tests_target",
-      "target": "cmakelists_lz4_dependency",
+      "source": "query_lang_error_code_taxonomy",
+      "target": "query_lang_getitem_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "readme_test_suite",
-      "target": "cmakelists_hermes_tests_target",
+      "source": "query_lang_error_code_taxonomy",
+      "target": "query_lang_lpop_rpop_operation",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "/home/zut3/code/HermesDB/CMakeLists.txt",
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "query_lang_error_code_taxonomy",
+      "target": "query_lang_srem_operation",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_http_api",
+      "target": "query_lang_mhrl",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md",
       "source_location": null,
       "weight": 1.0
     }
   ],
-  "hyperedges": [],
+  "hyperedges": [
+    {
+      "id": "readme_storage_configuration",
+      "label": "HermesDB Storage Configuration",
+      "nodes": [
+        "readme_cache_policy",
+        "readme_compression_method",
+        "readme_persistence"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/README.md"
+    },
+    {
+      "id": "query_lang_mhrl_operations",
+      "label": "MHRL Operations",
+      "nodes": [
+        "query_lang_get_operation",
+        "query_lang_set_operation",
+        "query_lang_del_operation",
+        "query_lang_getitem_operation",
+        "query_lang_ismember_operation",
+        "query_lang_size_operation",
+        "query_lang_inc_dec_operation",
+        "query_lang_lpush_rpush_operation",
+        "query_lang_lpop_rpop_operation",
+        "query_lang_sadd_operation",
+        "query_lang_srem_operation",
+        "query_lang_hset_operation",
+        "query_lang_hdel_operation"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/zut3/code/HermesDB/query_lang.md"
+    }
+  ],
   "input_tokens": 0,
   "output_tokens": 0
 }

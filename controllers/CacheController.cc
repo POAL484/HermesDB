@@ -10,18 +10,18 @@ using namespace drogon;
 void CacheController::applyOperation(const HttpRequestPtr& req, 
     std::function<void(const HttpResponsePtr&)>&& callback, std::string&& uuid) 
 {   
-    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse(""));
+    if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse("Unknown user uuid"));
     
     auto json = req->getJsonObject();
     if(!json) {
-        return callback(makeBadRequestResponse("Request body must be valid JSON."));
+        return callback(makeErrorResponse(k400BadRequest, -1, "Request body must be valid JSON."));
     }
 
     operation::Operation operation;
     try {
         operation = syntax::SyntaxModule::parse(*json);
     } catch(const syntax::SyntaxError& error) {
-        return callback(makeBadRequestResponse(error.what()));
+        return callback(makeErrorResponse(k400BadRequest, error.errorCode(), error.what()));
     }
 
     semantic::SemanticModule::KeyTypes key_types;
@@ -31,10 +31,15 @@ void CacheController::applyOperation(const HttpRequestPtr& req,
     try {
         semantic::SemanticModule::validate(operation, key_types);
     } catch(const semantic::SemanticError& error) {
-        return callback(makeBadRequestResponse(error.what()));
+        return callback(makeErrorResponse(k400BadRequest, error.errorCode(), error.what()));
     }
 
-    operation::OperationResult res = _service->apply(uuid, operation);
+    operation::OperationResult res;
+    try {
+        res = _service->apply(uuid, operation);
+    } catch(const operation::Error& error) {
+        return callback(makeErrorResponse(k400BadRequest, error.errorCode(), error.what()));
+    }
 
     Json::Value json_response;
     json_response["status"] = 200;
@@ -63,7 +68,9 @@ void CacheController::registerUser(const HttpRequestPtr& req,
 HttpResponsePtr CacheController::makeUnknownUserResponse(const std::string& msg="") 
 {
     Json::Value json;
-    json["error"] = "Unknown user uuid";    
+    json["status"] = 403;
+    json["errCode"] = 0;
+    json["err"] = msg;
     
     auto resp = HttpResponse::newHttpJsonResponse(json);
     resp->setStatusCode(k403Forbidden);
@@ -71,13 +78,16 @@ HttpResponsePtr CacheController::makeUnknownUserResponse(const std::string& msg=
     return resp;
 }
 
-HttpResponsePtr CacheController::makeBadRequestResponse(const std::string& msg="") 
+HttpResponsePtr CacheController::makeErrorResponse(int status, int errorCode,
+                                                    const std::string& message)
 {
     Json::Value json;
-    json["error"] = "Bad request. " + msg;    
+    json["status"] = status;
+    json["errCode"] = errorCode;
+    json["err"] = message;
     
     auto resp = HttpResponse::newHttpJsonResponse(json);
-    resp->setStatusCode(k400BadRequest);
+    resp->setStatusCode(static_cast<HttpStatusCode>(status));
     
     return resp;
 }

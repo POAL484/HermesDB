@@ -12,7 +12,13 @@ namespace syntax {
 
 class SyntaxError : public std::runtime_error {
  public:
-    explicit SyntaxError(const std::string& message) : std::runtime_error(message) {}
+    SyntaxError(int errorCode, const std::string& message)
+        : std::runtime_error(message), _errorCode(errorCode) {}
+
+    int errorCode() const noexcept { return _errorCode; }
+
+ private:
+    int _errorCode;
 };
 
 class SyntaxModule {

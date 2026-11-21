@@ -14,15 +14,19 @@ namespace repository {
     }
 
     operation::OperationResult LruRepository::deleteKey(const std::string& key) {
-        operation::OperationResult res{"OK!"};
-        
         auto it = _hashtable.find(key);
-        if(it == _hashtable.end()) return res;
+        if(it == _hashtable.end()) {
+            Json::Value response;
+            response["value"] = Json::Value();
+            return {response};
+        }
 
+        Json::Value response;
+        response["value"] = it->second.first.apply({operation::OperationType::GET, key}).message["value"];
         _keys.erase(it->second.second);
         _hashtable.erase(it);
 
-        return res;
+        return {response};
     } 
 
     operation::OperationResult LruRepository::apply(const operation::Operation& op) {
@@ -38,7 +42,14 @@ namespace repository {
         }
 
         if(op.type == operation::OperationType::GET) {
-            return {Json::Value()};
+            Json::Value response;
+            response["value"] = Json::Value();
+            return {response};
+        }
+        if(op.type == operation::OperationType::ISMEMBER) {
+            Json::Value response;
+            response["isMember"] = false;
+            return {response};
         }
 
         if(_hashtable.size() >= _capacity) {
@@ -74,19 +85,24 @@ namespace repository {
     }
 
     operation::OperationResult LfuRepository::deleteKey(const std::string& key) {
-        operation::OperationResult res{"OK!"};
-        
         auto it = _cache.find(key);
-        if(it == _cache.end()) return res;
+        if(it == _cache.end()) {
+            Json::Value response;
+            response["value"] = Json::Value();
+            return {response};
+        }
         int freq = it->second.first;
         auto kv_iter = it->second.second;
+        Json::Value response;
+        response["value"] = kv_iter->second.apply({operation::OperationType::GET, key}).message["value"];
         
         _freqs[freq].erase(kv_iter);
         if(_freqs[freq].empty()) {
             _freqs.erase(freq);
             if(_minfreq == freq) _minfreq += 1;
-        }  
-        return res;
+        }
+        _cache.erase(it);
+        return {response};
     }
 
     operation::OperationResult LfuRepository::apply(const operation::Operation& op) {
@@ -100,7 +116,14 @@ namespace repository {
         }
 
         if(op.type == operation::OperationType::GET) {
-            return {Json::Value()};
+            Json::Value response;
+            response["value"] = Json::Value();
+            return {response};
+        }
+        if(op.type == operation::OperationType::ISMEMBER) {
+            Json::Value response;
+            response["isMember"] = false;
+            return {response};
         }
 
         if(_cache.size() >= _capacity) {
@@ -146,13 +169,18 @@ namespace repository {
     }
 
     operation::OperationResult TlruRepository::deleteKey(const std::string& key) {
-        operation::OperationResult res{"OK!"};
         auto it = _hashtable.find(key);
-        if(it == _hashtable.end()) return res;
+        if(it == _hashtable.end()) {
+            Json::Value response;
+            response["value"] = Json::Value();
+            return {response};
+        }
 
+        Json::Value response;
+        response["value"] = std::get<0>(it->second).apply({operation::OperationType::GET, key}).message["value"];
         _keys.erase(std::get<1>(it->second));
         _hashtable.erase(it);
-        return res;
+        return {response};
     }
 
     bool TlruRepository::contains(const std::string& key) const {
@@ -208,7 +236,14 @@ namespace repository {
         }
 
         if(op.type == operation::OperationType::GET) {
-            return {Json::Value()};
+            Json::Value response;
+            response["value"] = Json::Value();
+            return {response};
+        }
+        if(op.type == operation::OperationType::ISMEMBER) {
+            Json::Value response;
+            response["isMember"] = false;
+            return {response};
         }
 
         if(expiration == std::chrono::steady_clock::time_point::min()) {

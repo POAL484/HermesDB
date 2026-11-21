@@ -1,5 +1,7 @@
 #include <repository/diskrepository.h>
 
+#include <jsoncpp/json/json.h>
+
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -16,6 +18,33 @@ namespace repository {
     namespace {
         constexpr std::string_view recordPrefix = "HDB2:";
         constexpr char escapeCharacter = '\x1b';
+
+        std::string toHex(std::string_view input) {
+            constexpr char digits[] = "0123456789abcdef";
+            std::string result;
+            result.reserve(input.size() * 2);
+            for(unsigned char byte : input) {
+                result += digits[byte >> 4];
+                result += digits[byte & 0x0f];
+            }
+            return result;
+        }
+
+        std::string fromHex(std::string_view input) {
+            if(input.size() % 2 != 0) throw std::runtime_error("Invalid hexadecimal persistent data");
+            auto digit = [](char value) -> unsigned char {
+                if(value >= '0' && value <= '9') return value - '0';
+                if(value >= 'a' && value <= 'f') return value - 'a' + 10;
+                if(value >= 'A' && value <= 'F') return value - 'A' + 10;
+                throw std::runtime_error("Invalid hexadecimal persistent data");
+            };
+            std::string result;
+            result.reserve(input.size() / 2);
+            for(size_t i = 0; i < input.size(); i += 2) {
+                result += static_cast<char>((digit(input[i]) << 4) | digit(input[i + 1]));
+            }
+            return result;
+        }
 
         std::string gzipCompress(const std::string& input) {
             z_stream stream{};
@@ -234,9 +263,19 @@ namespace repository {
             expiresAt = std::chrono::duration_cast<std::chrono::milliseconds>(now).count() +
                         op.ttl * 1000;
         }
-        oss << "HDB2" << _separator << (int)op.type << _separator << op.key;
-        for(auto value : op.value) oss << _separator << value.first << _separator << (int)value.second;
-        oss << _separator << op.ttl << _separator << expiresAt;
+        Json::Value values(Json::arrayValue);
+        for(const auto& value : op.value) {
+            Json::Value item(Json::objectValue);
+            item["key"] = value.first;
+            item["type"] = static_cast<int>(value.second);
+            item["data"] = value.data;
+            values.append(std::move(item));
+        }
+        Json::StreamWriterBuilder writer;
+        writer["indentation"] = "";
+        oss << "HDB3" << _separator << static_cast<int>(op.type) << _separator
+            << toHex(op.key) << _separator << toHex(Json::writeString(writer, values))
+            << _separator << op.ttl << _separator << expiresAt;
         const std::string compressed = compress(oss.str(), _compressionMethod);
 
         std::ofstream ofs(_filepath, std::ios_base::app | std::ios_base::binary);
@@ -262,6 +301,33 @@ namespace repository {
             decompress(unescapeRecord(std::string_view(line).substr(methodEnd + 1)), method);
 
         auto sp = std::views::split(uncompresed, _separator) | std::ranges::to<std::vector<std::string>>();
+        if(sp.size() == 6 && sp[0] == "HDB3") {
+            Json::Value values;
+            Json::CharReaderBuilder reader;
+            std::string errors;
+            const std::string valueJson = fromHex(sp[3]);
+            std::istringstream input(valueJson);
+            if(!Json::parseFromStream(reader, input, &values, &errors) || !values.isArray()) {
+                throw std::runtime_error("Invalid persistent operation values");
+            }
+            op.value.clear();
+            op.type = static_cast<operation::OperationType>(std::stoi(sp[1]));
+            op.key = fromHex(sp[2]);
+            for(const auto& item : values) {
+                if(!item.isObject() || !item["key"].isString() ||
+                   !item["type"].isInt() || !item.isMember("data")) {
+                    throw std::runtime_error("Invalid persistent operation value");
+                }
+                operation::Value value;
+                value.first = item["key"].asString();
+                value.second = static_cast<types::Type>(item["type"].asInt());
+                value.data = item["data"];
+                op.value.push_back(std::move(value));
+            }
+            op.ttl = std::stoll(sp[4]);
+            op.expiresAt = std::stoll(sp[5]);
+            return true;
+        }
         if(sp.size() < 5 || sp[0] != "HDB2" || (sp.size() - 5) % 2 != 0) {
             throw std::runtime_error("Invalid persistent repository record payload");
         }
@@ -273,7 +339,7 @@ namespace repository {
         op.key = sp[2];
         const size_t valueEnd = sp.size() - 2;
         for(size_t i = 3; i + 1 < valueEnd; i += 2) {
-            op.value.push_back({sp[i], (types::Type)(std::stoi(sp[i + 1]))});
+            op.value.emplace_back(sp[i], static_cast<types::Type>(std::stoi(sp[i + 1])));
         }
         op.ttl = std::stoll(sp[sp.size() - 2]);
         op.expiresAt = std::stoll(sp.back());

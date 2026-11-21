@@ -1,1 +1,10 @@
-{"0": "Core Data Types", "1": "Repository Persistence", "2": "Eviction Implementations", "3": "Controller Error Handling", "4": "Application Entry Points", "5": "Cache Operations", "6": "Value Semantics and Tests", "7": "Cache Service", "8": "Operation Commands", "9": "Documentation Concepts", "10": "Build Configuration", "11": "CI Workflow", "12": "Syntax Parsing"}
+{
+  "1": "Repository Persistence",
+  "2": "Eviction Implementations",
+  "3": "Controller Error Handling",
+  "6": "Value Semantics and Tests",
+  "7": "Cache Service",
+  "9": "Documentation Concepts",
+  "10": "Build Configuration",
+  "11": "CI Workflow"
+}
