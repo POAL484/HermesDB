@@ -42,23 +42,24 @@ POST /?uuid=<uuid>
 Content-Type: application/json
 ```
 
-Тело запроса — JSON-объект со строковыми `op` и `key`, а также полем `value`, которое должно быть JSON-массивом или JSON-объектом:
+Тело запроса — JSON-объект со строковыми `op` и `key`. Тип и поле значения зависят от операции:
 
 ```json
-{"op":"SET","key":"greeting","value":["hello"]}
+{"op":"SET","key":"greeting","value":"hello"}
 ```
 
-Элементы массива `value` могут быть строками или числами JSON. Строковое значение `SET` создаёт строковый ключ, а числовое — целочисленный. Для строковых операций `value` обычно содержит один элемент; для списков и множеств — несколько значений. Для `HSET` можно передать объект, где имена свойств — поля хэша, а значения — сохраняемые значения. Также поддерживается массив с чередующимися именами полей и значениями. Скалярное значение `value` приводит к ответу `400 Bad Request`.
+Строковое значение `SET` создаёт строковый ключ, числовое — целочисленный ключ, массив — список, а объект — хэш. Для создания множества передайте объект `{"$set":["один","два"]}`. Для `HSET` поле `value` должно быть объектом с парами «поле: значение». Операции `GETITEM` принимают массив индексов или строковых ключей в поле `item`; `HDEL` принимает массив строковых ключей в поле `mapKeys`. Для `INC` и `DEC` поле `value` должно быть числом.
 
 Операции и результаты:
 
 | `op` | Операция | Дополнительные поля | Результат |
 |---:|---|---|---|
 | `GET` | Получить значение ключа | `key` | Для строки — строка, для целого числа — JSON-число, для списка — массив, для множества — массив, для хэша — JSON-объект |
-| `SET` | Установить строковое или целочисленное значение | `key`, `value` | `OK!`/сохранённое значение |
-| `INC` | Увеличить целочисленное значение | `key`, `value` — одно или несколько целых чисел | Итоговое значение после увеличения |
-| `DEC` | Уменьшить целочисленное значение | `key`, `value` — одно или несколько целых чисел | Итоговое значение после уменьшения |
-| `DELETE` | Удалить ключ | `key` | `OK!` |
+| `SET` | Установить строковое, числовое, списочное, множественное или хэш-значение | `key`, `value` | `{"OK":"OK!"}` |
+| `INC` | Увеличить целочисленное значение | `key`, `value` — число | Итоговое значение в поле `value` |
+| `DEC` | Уменьшить целочисленное значение | `key`, `value` — число | Итоговое значение в поле `value` |
+| `DELETE` / `DEL` | Удалить ключ | `key` | Удалённое значение в поле `value` |
+| `SIZE` | Получить размер строки, списка, множества или хэша | `key` | Размер в поле `size` |
 | `LPUSH` | Добавить значение в начало списка | `key`, `value` | Новая длина списка |
 | `RPUSH` | Добавить значение в конец списка | `key`, `value` | Новая длина списка |
 | `LPOP` | Извлечь значение из начала списка | `key` | Извлечённое значение |
@@ -66,11 +67,11 @@ Content-Type: application/json
 | `SADD` | Добавить элемент в множество | `key`, `value` | Новый размер множества |
 | `SREM` | Удалить элемент из множества | `key`, `value` | Новый размер множества |
 | `ISMEMBER` | Проверить принадлежность элемента множеству | `key`, `value` | `true`/`false` |
-| `GETITEM` | Получить элемент хэша по ключу | `key`, `value` | JSON-объект с выбранными полями |
-| `HSET` | Записать поля и значения в хэш | `key`, `value` — объект `поле: значение` или массив чередующихся полей и значений | Размер хэша |
-| `HDEL` | Удалить поля из хэша | `key`, `value` | JSON-объект с удалёнными значениями |
+| `GETITEM` | Получить элементы списка или поля хэша | `key`, `item` — массив строковых ключей или целочисленных индексов | JSON-объект в поле `value` |
+| `HSET` | Записать поля и значения в хэш | `key`, `value` — объект `поле: значение` | Размер хэша в поле `size` |
+| `HDEL` | Удалить поля из хэша | `key`, `mapKeys` — массив строковых ключей | Удалённые поля в поле `deleted` |
 
-Все операции передаются через `POST` или `PUT`. Ответ операции — JSON-объект в поле `data` со статусом `200`.
+Все операции передаются через `POST` или `PUT`. Успешный ответ содержит HTTP-статус `200`, поле `status: 200` и данные операции в поле `data`. Если UUID неизвестен, сервис отвечает HTTP `403` и JSON вида `{"status":403,"errCode":0,"err":"Unknown user uuid"}`. Ошибки синтаксиса, семантики и выполнения операции возвращают соответствующий HTTP-статус и JSON вида `{"status":400,"errCode":<код>,"err":"<сообщение>"}`.
 
 Примеры с `curl`:
 
@@ -81,26 +82,26 @@ curl http://localhost/new
 # Записать строку
 curl -X POST 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
-  -d '{"op":"SET","key":"greeting","value":["hello"]}'
+  -d '{"op":"SET","key":"greeting","value":"hello"}'
 
 # Прочитать строку
 curl -X POST 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
-  -d '{"op":"GET","key":"greeting","value":[]}'
+  -d '{"op":"GET","key":"greeting"}'
 
 # Создать целочисленный ключ, увеличить его и прочитать результат
 curl -X PUT 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
-  -d '{"op":"SET","key":"visits","value":[10]}'
+  -d '{"op":"SET","key":"visits","value":10}'
 curl -X PUT 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
-  -d '{"op":"INC","key":"visits","value":[3]}'
+  -d '{"op":"INC","key":"visits","value":3}'
 curl -X PUT 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
-  -d '{"op":"DEC","key":"visits","value":[2]}'
+  -d '{"op":"DEC","key":"visits","value":2}'
 curl -X POST 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
-  -d '{"op":"GET","key":"visits","value":[]}'
+  -d '{"op":"GET","key":"visits"}'
 
 # Значение ключа становится первым элементом списка; добавить второй и извлечь первый
 curl -X POST 'http://localhost/?uuid=<uuid>' \
@@ -108,20 +109,34 @@ curl -X POST 'http://localhost/?uuid=<uuid>' \
   -d '{"op":"SET","key":"queue","value":["first"]}'
 curl -X PUT 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
-  -d '{"op":"RPUSH","key":"queue","value":["second"]}'
+  -d '{"op":"RPUSH","key":"queue","value":"second"}'
 curl -X PUT 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
-  -d '{"op":"LPOP","key":"queue","value":[]}'
+  -d '{"op":"LPOP","key":"queue"}'
 
 # Добавить элементы в множество
 curl -X PUT 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
-  -d '{"op":"SADD","key":"users","value":["john","alice","john"]}'
+  -d '{"op":"SADD","key":"users","value":"john"}'
+curl -X PUT 'http://localhost/?uuid=<uuid>' \
+  -H 'Content-Type: application/json' \
+  -d '{"op":"SADD","key":"users","value":"alice"}'
+curl -X POST 'http://localhost/?uuid=<uuid>' \
+  -H 'Content-Type: application/json' \
+  -d '{"op":"ISMEMBER","key":"users","value":"john"}'
 
 # Добавить пары в хэш
 curl -X PUT 'http://localhost/?uuid=<uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"HSET","key":"profile","value":{"name":"Hermes","role":"gateway"}}'
+
+# Получить поле хэша и размер хэша
+curl -X POST 'http://localhost/?uuid=<uuid>' \
+  -H 'Content-Type: application/json' \
+  -d '{"op":"GETITEM","key":"profile","item":["name"]}'
+curl -X POST 'http://localhost/?uuid=<uuid>' \
+  -H 'Content-Type: application/json' \
+  -d '{"op":"SIZE","key":"profile"}'
 ```
 
 ## Кеширование и сохранение
@@ -130,7 +145,7 @@ curl -X PUT 'http://localhost/?uuid=<uuid>' \
 Для политики TLRU TTL передаётся целым числом секунд в поле `ttl` операций записи. Значение `0` означает отсутствие срока жизни. Например:
 
 ```json
-{"op":"SET","key":"session","value":["active"],"ttl":60}
+{"op":"SET","key":"session","value":"active","ttl":60}
 ```
 Алгоритм сжатия записей задаётся в `custom_config.compression_method`: `Snappy` (по умолчанию), `GZIP` или `LZ4`.
 
