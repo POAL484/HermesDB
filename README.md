@@ -31,14 +31,15 @@ GET /new
 {"uuid":"<uuid>"}
 ```
 
-Передавайте этот UUID в параметре запроса для операций с хранилищем.
+Передавайте этот UUID в HTTP-заголовке `user` для операций с хранилищем.
 
 ### Выполнить операцию
 
 Операционный маршрут принимает запросы `POST` и `PUT`:
 
 ```http
-POST /?uuid=<uuid>
+POST /
+user: <uuid>
 Content-Type: application/json
 ```
 
@@ -80,61 +81,76 @@ Content-Type: application/json
 curl http://localhost/new
 
 # Записать строку
-curl -X POST 'http://localhost/?uuid=<uuid>' \
+curl -X POST 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"SET","key":"greeting","value":"hello"}'
 
 # Прочитать строку
-curl -X POST 'http://localhost/?uuid=<uuid>' \
+curl -X POST 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"GET","key":"greeting"}'
 
 # Создать целочисленный ключ, увеличить его и прочитать результат
-curl -X PUT 'http://localhost/?uuid=<uuid>' \
+curl -X PUT 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"SET","key":"visits","value":10}'
-curl -X PUT 'http://localhost/?uuid=<uuid>' \
+curl -X PUT 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"INC","key":"visits","value":3}'
-curl -X PUT 'http://localhost/?uuid=<uuid>' \
+curl -X PUT 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"DEC","key":"visits","value":2}'
-curl -X POST 'http://localhost/?uuid=<uuid>' \
+curl -X POST 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"GET","key":"visits"}'
 
 # Значение ключа становится первым элементом списка; добавить второй и извлечь первый
-curl -X POST 'http://localhost/?uuid=<uuid>' \
+curl -X POST 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"SET","key":"queue","value":["first"]}'
-curl -X PUT 'http://localhost/?uuid=<uuid>' \
+curl -X PUT 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"RPUSH","key":"queue","value":"second"}'
-curl -X PUT 'http://localhost/?uuid=<uuid>' \
+curl -X PUT 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"LPOP","key":"queue"}'
 
 # Добавить элементы в множество
-curl -X PUT 'http://localhost/?uuid=<uuid>' \
+curl -X PUT 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"SADD","key":"users","value":"john"}'
-curl -X PUT 'http://localhost/?uuid=<uuid>' \
+curl -X PUT 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"SADD","key":"users","value":"alice"}'
-curl -X POST 'http://localhost/?uuid=<uuid>' \
+curl -X POST 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"ISMEMBER","key":"users","value":"john"}'
 
 # Добавить пары в хэш
-curl -X PUT 'http://localhost/?uuid=<uuid>' \
+curl -X PUT 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"HSET","key":"profile","value":{"name":"Hermes","role":"gateway"}}'
 
 # Получить поле хэша и размер хэша
-curl -X POST 'http://localhost/?uuid=<uuid>' \
+curl -X POST 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"GETITEM","key":"profile","item":["name"]}'
-curl -X POST 'http://localhost/?uuid=<uuid>' \
+curl -X POST 'http://localhost/' \
+  -H 'user: <uuid>' \
   -H 'Content-Type: application/json' \
   -d '{"op":"SIZE","key":"profile"}'
 ```

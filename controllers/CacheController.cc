@@ -8,8 +8,9 @@
 using namespace drogon;
 
 void CacheController::applyOperation(const HttpRequestPtr& req, 
-    std::function<void(const HttpResponsePtr&)>&& callback, std::string&& uuid) 
+    std::function<void(const HttpResponsePtr&)>&& callback)
 {   
+    const std::string uuid = req->getHeader("user");
     if(!_service->haveRepo(uuid)) return callback(makeUnknownUserResponse("Unknown user uuid"));
     
     auto json = req->getJsonObject();
