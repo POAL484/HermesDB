@@ -14,7 +14,7 @@ namespace repository {
 
 class InMemoryRepository : public Repository {
  public:
-    InMemoryRepository(size_t capacity = 500) : _capacity(capacity) {
+    InMemoryRepository(size_t capacity = 100) : _capacity(capacity) {
       LOG_INFO << "Created in-memory repo with cap " << _capacity;
     }
 
@@ -29,8 +29,8 @@ class LruRepository : public InMemoryRepository {
     operation::OperationResult apply(const operation::Operation& op) override;
 
   private:
-    using Value = std::pair<cache::Cache, std::list<std::string>::iterator>;   
-    
+    using Value = std::pair<cache::Cache, std::list<std::string>::iterator>;
+
     std::unordered_map<std::string, Value> _hashtable;
     std::list<std::string> _keys;
 

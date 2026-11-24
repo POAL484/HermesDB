@@ -269,8 +269,10 @@ class Cache {
     for(const auto& item : op.value) {
       if(!item.data.isString()) throw operation::Error(-1, "Map keys must be strings");
       const std::string key = item.data.asString();
-      deleted[key] = _value.isMember(key) ? _value[key] : Json::Value();
-      _value.removeMember(key);
+      if(_value.isMember(key)) {
+          deleted[key] = _value[key];
+          _value.removeMember(key);
+      }
     }
     return deleted;
   }
