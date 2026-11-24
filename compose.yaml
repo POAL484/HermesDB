@@ -1,0 +1,11 @@
+services:
+  hermesdb:
+    build: .
+    ports:
+      - "5445:80"
+    volumes:
+      - hermesdb-data:/usr/share/hermes
+    restart: unless-stopped
+
+volumes:
+  hermesdb-data:
