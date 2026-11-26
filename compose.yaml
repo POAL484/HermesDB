@@ -3,6 +3,11 @@ services:
     build: .
     ports:
       - "5445:80"
+    environment:
+      - HERMES_CONFIG=${HERMES_CONFIG:-/app/config.json}
+      - CACHE_ALGORITHM=${CACHE_ALGORITHM:-LRU}
+      - DISK_ENABLE=${DISK_ENABLE:-true}
+      - DISK_COMPRESSION_ALGORITHM=${DISK_COMPRESSION_ALGORITHM:-Snappy}
     volumes:
       - hermesdb-data:/usr/share/hermes
     restart: unless-stopped

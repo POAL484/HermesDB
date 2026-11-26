@@ -1,6 +1,7 @@
 #pragma once
 
 #include <models/operation.h>
+#include <models/configuration.h>
 #include <repository/repository.h>
 #include <repository/diskrepository.h>
 #include <repository/inmemoryrepository.h>
@@ -16,21 +17,26 @@ namespace cache {
 class CacheService {
  public:
     CacheService() {
-        _policy = drogon::app().getCustomConfig().get("cache_policy", "").asString();
+        const auto& config = drogon::app().getCustomConfig();
+        _policy = configuration::getStringSetting(config, "cache_policy", "CACHE_ALGORITHM", "");
         if(_policy == "") {
             LOG_WARN << "Cache policy not provided. Using LRU now";
             _policy = "LRU";
         }
+        if(std::getenv("CACHE_ALGORITHM") &&
+           _policy != "LRU" && _policy != "LFU" && _policy != "TLRU") {
+            throw std::invalid_argument("Unsupported CACHE_ALGORITHM: " + _policy);
+        }
 
-        const std::string compressionMethod =
-            drogon::app().getCustomConfig().get("compression_method", "Snappy").asString();
+        const std::string compressionMethod = configuration::getStringSetting(
+            config, "compression_method", "DISK_COMPRESSION_ALGORITHM", "Snappy");
         if(compressionMethod == "Snappy") _compressionMethod = repository::CompressionMethod::Snappy;
         else if(compressionMethod == "GZIP") _compressionMethod = repository::CompressionMethod::Gzip;
         else if(compressionMethod == "LZ4") _compressionMethod = repository::CompressionMethod::Lz4;
         else throw std::invalid_argument("Unsupported compression_method: " + compressionMethod);
 
-        _persistentDir = drogon::app().getCustomConfig().get("persistent_path", "/tmp/.hermes/").asString();
-        _isPersistent = drogon::app().getCustomConfig().get("persistent", false).asBool();
+        _persistentDir = config.get("persistent_path", "/tmp/.hermes/").asString();
+        _isPersistent = configuration::getBoolSetting(config, "persistent", "DISK_ENABLE", false);
 
         if(!_isPersistent) return;
 

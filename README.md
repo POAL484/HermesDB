@@ -15,7 +15,7 @@ cd build
 ./cache_service
 ```
 
-Сервис загружает конфигурацию из `../config.json` относительно текущего каталога и по умолчанию слушает порт `80` на всех сетевых интерфейсах.
+Сервис загружает конфигурацию из json файла, путь до которого задан в переменной окружения `HERMES_CONFIG`.
 
 ### Запуск в Docker
 
@@ -174,6 +174,20 @@ curl -X POST 'http://localhost/' \
 {"op":"SET","key":"session","value":"active","ttl":60}
 ```
 Алгоритм сжатия записей задаётся в `custom_config.compression_method`: `Snappy` (по умолчанию), `GZIP` или `LZ4`.
+
+Настройки можно переопределить переменными окружения. Если переменная задана, её значение имеет приоритет над соответствующим полем `custom_config`:
+
+| Переменная окружения | Поле `config.json` | Допустимые значения |
+| --- | --- | --- |
+| `CACHE_ALGORITHM` | `cache_policy` | `LRU`, `LFU`, `TLRU` |
+| `DISK_ENABLE` | `persistent` | `true`, `false`, `1`, `0` |
+| `DISK_COMPRESSION_ALGORITHM` | `compression_method` | `Snappy`, `GZIP`, `LZ4` |
+
+Например, для запуска с LFU, включённой персистентностью и LZ4:
+
+```sh
+CACHE_ALGORITHM=LFU DISK_ENABLE=true DISK_COMPRESSION_ALGORITHM=LZ4 docker compose up --build -d
+```
 
 Персистентность также настраивается в `custom_config` файла `config.json`:
 

@@ -4,6 +4,7 @@
 #include <jsoncpp/json/json.h>
 
 #include <models/cacheservice.h>
+#include <models/configuration.h>
 #include <query/syntaxmodule.h>
 #include <query/semanticmodule.h>
 #include <filesystem>
@@ -13,6 +14,33 @@
 #include <thread>
 
 using namespace drogon;
+
+DROGON_TEST(EnvironmentSettingsOverrideConfig) {
+    Json::Value config(Json::objectValue);
+    config["cache_policy"] = "LRU";
+    config["compression_method"] = "Snappy";
+    config["persistent"] = true;
+
+    setenv("CACHE_ALGORITHM", "LFU", 1);
+    setenv("DISK_COMPRESSION_ALGORITHM", "LZ4", 1);
+    setenv("DISK_ENABLE", "false", 1);
+
+    CHECK(cache::configuration::getStringSetting(
+              config, "cache_policy", "CACHE_ALGORITHM", "LRU") == "LFU");
+    CHECK(cache::configuration::getStringSetting(
+              config, "compression_method", "DISK_COMPRESSION_ALGORITHM", "Snappy") == "LZ4");
+    CHECK(!cache::configuration::getBoolSetting(config, "persistent", "DISK_ENABLE", true));
+
+    unsetenv("CACHE_ALGORITHM");
+    unsetenv("DISK_COMPRESSION_ALGORITHM");
+    unsetenv("DISK_ENABLE");
+
+    CHECK(cache::configuration::getStringSetting(
+              config, "cache_policy", "CACHE_ALGORITHM", "LRU") == "LRU");
+    CHECK(cache::configuration::getStringSetting(
+              config, "compression_method", "DISK_COMPRESSION_ALGORITHM", "Snappy") == "Snappy");
+    CHECK(cache::configuration::getBoolSetting(config, "persistent", "DISK_ENABLE", false));
+}
 
 
 DROGON_TEST(GetUserUUID) 
